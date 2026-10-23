@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basel Skayker | Python Backend & AI Developer</title>
+  <meta name="description" content="Portfolio of Basel Skayker — Python Backend & AI Developer in Accra, Ghana. Specializing in FastAPI, Google ADK, Pydantic, and SQLAlchemy." />
+  <meta name="author" content="Basel Skayker" />
+
+  <!-- Google Fonts: Inter, IBM Plex Sans Arabic & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Lucide Icons Vanilla JS CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Layer 0: Faded & Blurred Python Code Background (FastAPI, Pydantic, SQLAlchemy, Google ADK) -->
+  <div id="code-backdrop" aria-hidden="true">
+    <div class="code-stream stream-1">
+      <pre><code><span class="kw">from</span> typing <span class="kw">import</span> Generic, TypeVar
+<span class="kw">from</span> uuid <span class="kw">import</span> UUID, uuid4
+<span class="kw">from</span> fastapi <span class="kw">import</span> APIRouter, Depends, status
+<span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, Field, ConfigDict, field_validator
+<span class="kw">from</span> sqlalchemy.ext.asyncio <span class="kw">import</span> AsyncSession
+<span class="kw">from</span> sqlalchemy <span class="kw">import</span> select
+
+<span class="decorator">@router.post</span>(<span class="str">"/v1/agents/chat"</span>, response_model=AgentResponseSchema, status_code=status.HTTP_200_OK)
+<span class="kw">async def</span> <span class="fn">execute_agent_loop</span>(
+    request: AgentExecutionRequest,
+    session: AsyncSession = Depends(get_async_session),
+    orchestrator: ADKOrchestrator = Depends(get_orchestrator)
+) -> AgentResponseSchema:
+    <span class="comment"># Initialize Google ADK multi-agent pipeline with strict boundary governance</span>
+    logger.info(<span class="str">"Initiating multi-agent consensus workflow"</span>, agent_id=request.agent_id)
+    result = <span class="kw">await</span> orchestrator.dispatch_sequential_chain(
+        prompt=request.prompt,
+        constitution=AIConstitution.STRICT_GOVERNANCE,
+        session=session
+    )
+    <span class="kw">return</span> AgentResponseSchema.model_validate(result)
+
+<span class="kw">class</span> <span class="cls">BaseRepository</span>(Generic[ModelType]):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, model: type[ModelType], session: AsyncSession) -> <span class="kw">None</span>:
+        self.model = model
+        self.session = session
+
+    <span class="kw">async def</span> <span class="fn">get_by_id</span>(self, entity_id: UUID) -> ModelType | <span class="kw">None</span>:
+        statement = select(self.model).where(self.model.id == entity_id)
+        result = <span class="kw">await</span> self.session.execute(statement)
+        <span class="kw">return</span> result.scalar_one_or_none()
+
+    <span class="kw">async def</span> <span class="fn">create</span>(self, schema: BaseModel) -> ModelType:
+        entity = self.model(**schema.model_dump(exclude_unset=<span class="kw">True</span>))
+        self.session.add(entity)
+        <span class="kw">await</span> self.session.flush()
+        <span class="kw">return</span> entity</code></pre>
+    </div>
+
+    <div class="code-stream stream-2">
+      <pre><code><span class="kw">class</span> <span class="cls">AgentExecutionRequest</span>(BaseModel):
+    model_config = ConfigDict(strict=<span class="kw">True</span>, frozen=<span class="kw">True</span>, from_attributes=<span class="kw">True</span>)
+    
+    agent_id: UUID = Field(default_factory=uuid4, description=<span class="str">"Unique execution ID"</span>)
+    prompt: str = Field(min_length=3, max_length=4096, description=<span class="str">"Sanitized query"</span>)
+    temperature: float = Field(default=0.2, ge=0.0, le=1.0)
+    validation_level: StrictValidationEnum = Field(default=StrictValidationEnum.HIGH)
+
+    <span class="decorator">@field_validator</span>(<span class="str">"prompt"</span>)
+    <span class="decorator">@classmethod</span>
+    <span class="kw">def</span> <span class="fn">validate_prompt_safety</span>(cls, value: str) -> str:
+        <span class="kw">if</span> contains_jailbreak_tokens(value):
+            <span class="kw">raise</span> ValueError(<span class="str">"Prompt violates AI constitution safety boundaries"</span>)
+        <span class="kw">return</span> value.strip()
+
+<span class="kw">class</span> <span class="cls">SequentialAgentChain</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, agents: list[GoogleADKAgent], constitution: str) -> <span class="kw">None</span>:
+        self.pipeline = agents
+        self.constitution = constitution
+
+    <span class="kw">async def</span> <span class="fn">run</span>(self, input_context: AgentContext) -> AgentContext:
+        ctx = input_context
+        <span class="kw">for</span> step, agent <span class="kw">in</span> enumerate(self.pipeline, start=1):
+            ctx = <span class="kw">await</span> agent.process(ctx, guardrails=self.constitution)
+            <span class="kw">if</span> ctx.is_hallucinating:
+                <span class="kw">raise</span> HallucinationDetectedException(<span class="str">f"Step {step} failed schema check"</span>)
+        <span class="kw">return</span> ctx</code></pre>
+    </div>
+  </div>
+
+  <!-- Layer 1: Radial Cursor Spotlight -->
+  <div id="spotlight" aria-hidden="true"></div>
+
+  <!-- Layer 2: Main Layout Container -->
+  <div class="layout-wrapper">
+
+    <!-- Desktop Sticky Sidebar / Mobile Header -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+
+        <!-- Profile Avatar & Status Badge -->
+        <div class="profile-header">
+          <div class="avatar-frame">
+            <img 
+              src="static/public/my-image.jfif" 
+              alt="Basel Skayker - Python Backend & AI Developer" 
+              class="profile-img"
+              loading="eager"
+            />
+          </div>
+          <div class="status-pill">
+            <span class="status-dot"></span>
+            <span>Available for Projects & Roles</span>
+          </div>
+        </div>
+
+        <!-- Identity & Tagline -->
+        <h1 class="dev-name">Basel Skayker</h1>
+        <h2 class="dev-title">Python Backend & AI Developer</h2>
+        
+        <div class="location-badge">
+          <i data-lucide="map-pin"></i>
+          <span>Accra, Ghana</span>
+          <span class="utc-tag">UTC+0</span>
+        </div>
+
+        <p class="tagline">
+          Architecting high-performance asynchronous FastAPI backends, resilient SQLAlchemy databases, and reliable multi-agent AI systems governed by strict schemas.
+        </p>
+
+        <!-- Hero CTAs -->
+        <div class="hero-actions">
+          <a href="static/public/cv.pdf" target="_blank" rel="noopener" class="btn btn-primary" id="view-cv-btn">
+            <i data-lucide="file-text"></i>
+            <span>View / Download CV</span>
+          </a>
+          <a href="https://wa.me/233592121895?text=Hello%20Basel%2C%20I%20visited%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project." target="_blank" rel="noopener" class="btn btn-outline" id="hero-whatsapp-btn">
+            <i data-lucide="message-circle"></i>
+            <span>WhatsApp Me</span>
+          </a>
+        </div>
+
+        <!-- Scroll-Spy Section Navigation -->
+        <nav class="section-nav" aria-label="In-page jump links">
+          <a href="#about" class="nav-link active">
+            <span class="nav-line"></span>
+            <span class="nav-number">01.</span>
+            <span class="nav-text">About & CV</span>
+          </a>
+          <a href="#skills" class="nav-link">
+            <span class="nav-line"></span>
+            <span class="nav-number">02.</span>
+            <span class="nav-text">Technical Skills</span>
+          </a>
+          <a href="#services" class="nav-link">
+            <span class="nav-line"></span>
+            <span class="nav-number">03.</span>
+            <span class="nav-text">Services & Value</span>
+          </a>
+          <a href="#projects" class="nav-link">
+            <span class="nav-line"></span>
+            <span class="nav-number">04.</span>
+            <span class="nav-text">Projects & Experience</span>
+          </a>
+          <a href="#contact" class="nav-link">
+            <span class="nav-line"></span>
+            <span class="nav-number">05.</span>
+            <span class="nav-text">Direct Contact</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Social and Direct Channels -->
+      <div class="sidebar-bottom">
+        <div class="social-links">
+          <a href="https://github.com/Ba-se-l" target="_blank" rel="noopener" aria-label="GitHub Profile" class="social-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>
+          </a>
+          <a href="mailto:baselskaiker21@gmail.com" aria-label="Send Email" class="social-icon">
+            <i data-lucide="mail"></i>
+          </a>
+          <a href="https://wa.me/233592121895" target="_blank" rel="noopener" aria-label="WhatsApp Ghana" class="social-icon">
+            <i data-lucide="phone"></i>
+          </a>
+          <a href="https://wa.me/963967247787" target="_blank" rel="noopener" aria-label="WhatsApp Syria" class="social-icon">
+            <i data-lucide="message-square"></i>
+          </a>
+          <a href="https://www.linkedin.com/in/baselskaiker-9602601a9/" target="_blank" rel="noopener" aria-label="LinkedIn Profile" class="social-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect width="4" height="12" x="2" y="9"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+          </a>
+          <a href="#contact" aria-label="Direct Inquiry Form" class="social-icon">
+            <i data-lucide="send"></i>
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Scrolling Content Column -->
+    <main class="main-content">
+
+      <!-- SECTION 01: ABOUT & CV -->
+      <section id="about" class="content-section">
+        <div class="section-header">
+          <span class="section-num">01.</span>
+          <h2 class="section-heading">About & Professional Vision</h2>
+        </div>
+
+        <div class="section-body">
+          <p class="lead-text">
+            I am a <strong>Python Backend & AI Developer</strong> currently based in <strong>Accra, Ghana</strong>. My engineering methodology is grounded in deep logical problem-solving, clean architectural modularity, and crafting AI applications that deliver tangible, positive human impact.
+          </p>
+
+          <p>
+            Rather than treating backend development as superficial glue code, I specialize in engineering resilient server infrastructures using <strong>FastAPI</strong>, <strong>SQLAlchemy 2.0 ORM</strong>, and <strong>Asyncio</strong>. In artificial intelligence, I design multi-agent chains with <strong>Google ADK</strong> and enforce strict schema boundary validation using <strong>Pydantic V2</strong> and Enums to completely eliminate hallucinations.
+          </p>
+
+          <!-- Bilingual Capability Card -->
+          <div class="bilingual-card">
+            <div class="lang-item">
+              <span class="lang-title"><i data-lucide="globe"></i> Arabic (العربية)</span>
+              <span class="lang-desc">Native Language — لغة أم، تواصل فوري وصياغة دقيقة.</span>
+            </div>
+            <div class="lang-divider"></div>
+            <div class="lang-item">
+              <span class="lang-title"><i data-lucide="check-circle-2"></i> English (Technical B1)</span>
+              <span class="lang-desc">Strong reading & writing proficiency for documentation, PR reviews, and technical collaboration.</span>
+            </div>
+          </div>
+
+          <!-- CV Quick Preview Card -->
+          <div class="cv-highlight-card">
+            <div class="cv-info">
+              <div class="cv-icon"><i data-lucide="file-check"></i></div>
+              <div>
+                <h3 class="cv-title">Verified Official Curriculum Vitae</h3>
+                <p class="cv-subtitle">Full breakdown of backend engineering milestones, academic background, and technical projects.</p>
+              </div>
+            </div>
+            <div class="cv-actions">
+              <a href="static/public/cv.pdf" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+                <i data-lucide="external-link"></i>
+                <span>Open CV (PDF)</span>
+              </a>
+              <a href="static/public/cv.pdf" download="Basel_Skayker_CV.pdf" class="btn btn-outline btn-sm">
+                <i data-lucide="download"></i>
+                <span>Download PDF</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 02: TECHNICAL SKILLS -->
+      <section id="skills" class="content-section">
+        <div class="section-header">
+          <span class="section-num">02.</span>
+          <h2 class="section-heading">Technical Skills & Architecture</h2>
+        </div>
+
+        <p class="section-intro">
+          Specialized technical competencies categorized by engineering domains, focused on deterministic execution, concurrency, and clean data boundaries:
+        </p>
+
+        <div class="skills-grid">
+
+          <!-- Skill Card 1: Backend & Concurrency -->
+          <article class="skill-card">
+            <div class="skill-icon-header">
+              <div class="icon-box"><i data-lucide="server"></i></div>
+              <h3 class="skill-title">Backend & Concurrency</h3>
+            </div>
+            <p class="skill-desc">
+              High-throughput asynchronous systems, concurrent I/O handling, and resilient RESTful architectures.
+            </p>
+            <div class="tech-pills">
+              <span class="tech-pill pill-accent">Python (Expert)</span>
+              <span class="tech-pill">FastAPI</span>
+              <span class="tech-pill">Asyncio / Concurrency</span>
+              <span class="tech-pill">WebSockets</span>
+              <span class="tech-pill">RESTful APIs</span>
+              <span class="tech-pill">Starlette</span>
+            </div>
+          </article>
+
+          <!-- Skill Card 2: AI Architecture & Data Integrity -->
+          <article class="skill-card">
+            <div class="skill-icon-header">
+              <div class="icon-box"><i data-lucide="cpu"></i></div>
+              <h3 class="skill-title">AI Architecture & Data Integrity</h3>
+            </div>
+            <p class="skill-desc">
+              Multi-agent generative pipelines with strict schema boundaries to guarantee predictable outputs.
+            </p>
+            <div class="tech-pills">
+              <span class="tech-pill pill-cyan">Google ADK / SDK</span>
+              <span class="tech-pill pill-cyan">Pydantic V2</span>
+              <span class="tech-pill">Strict Enums</span>
+              <span class="tech-pill">Sequential Agent Chains</span>
+              <span class="tech-pill">Output Validation</span>
+            </div>
+          </article>
+
+          <!-- Skill Card 3: Database Management -->
+          <article class="skill-card">
+            <div class="skill-icon-header">
+              <div class="icon-box"><i data-lucide="database"></i></div>
+              <h3 class="skill-title">Database Management & ORM</h3>
+            </div>
+            <p class="skill-desc">
+              Relational schemas, connection pooling, non-blocking asynchronous queries, and generic repositories.
+            </p>
+            <div class="tech-pills">
+              <span class="tech-pill">SQLAlchemy 2.0 ORM</span>
+              <span class="tech-pill">AsyncSession</span>
+              <span class="tech-pill">PostgreSQL</span>
+              <span class="tech-pill">SQLite</span>
+              <span class="tech-pill">Generic BaseRepository</span>
+              <span class="tech-pill">Alembic</span>
+            </div>
+          </article>
+
+          <!-- Skill Card 4: AI Governance & Tools -->
+          <article class="skill-card">
+            <div class="skill-icon-header">
+              <div class="icon-box"><i data-lucide="shield-check"></i></div>
+              <h3 class="skill-title">AI Governance & Ecosystem</h3>
+            </div>
+            <p class="skill-desc">
+              Behavioral constitutions for LLMs (Gemini / Claude) to prevent hallucination, paired with modern developer workflows.
+            </p>
+            <div class="tech-pills">
+              <span class="tech-pill pill-cyan">Gemini & Claude</span>
+              <span class="tech-pill pill-accent">AI Constitutions</span>
+              <span class="tech-pill">Anti-Hallucination Guardrails</span>
+              <span class="tech-pill">VS Code</span>
+              <span class="tech-pill">GitHub</span>
+              <span class="tech-pill">Codeberg</span>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- SECTION 03: SERVICES & VALUE -->
+      <section id="services" class="content-section">
+        <div class="section-header">
+          <span class="section-num">03.</span>
+          <h2 class="section-heading">Services & Value Proposition</h2>
+        </div>
+
+        <p class="section-intro">
+          What I deliver to companies, clients, and engineering teams with guaranteed engineering metrics:
+        </p>
+
+        <div class="services-grid">
+
+          <!-- Service 1 -->
+          <article class="service-card">
+            <div class="service-top">
+              <span class="service-number">01</span>
+              <i data-lucide="zap" class="service-icon"></i>
+            </div>
+            <h3 class="service-title">High-Performance FastAPI Backend Architecture</h3>
+            <p class="service-desc">
+              Design and implementation of non-blocking backend microservices with automatic OpenAPI interactive documentation, bulletproof authentication, and granular RBAC authorization.
+            </p>
+            <div class="guarantee-box">
+              <span class="guarantee-label">Guaranteed Deliverable:</span>
+              <span class="guarantee-text">Sub-100ms response latencies, zero thread starvation, and comprehensive audit logging.</span>
+            </div>
+            <div class="tech-pills">
+              <span class="tech-pill">FastAPI</span>
+              <span class="tech-pill">Asyncio</span>
+              <span class="tech-pill">JWT / RBAC</span>
+              <span class="tech-pill">Audit Trail</span>
+            </div>
+          </article>
+
+          <!-- Service 2 -->
+          <article class="service-card">
+            <div class="service-top">
+              <span class="service-number">02</span>
+              <i data-lucide="bot" class="service-icon"></i>
+            </div>
+            <h3 class="service-title">Multi-Agent AI Systems & LLM Governance</h3>
+            <p class="service-desc">
+              Architecting multi-agent generative loops via Google ADK and leading LLMs (Gemini, Claude), constrained by strict behavioral constitutions and Pydantic validation barriers.
+            </p>
+            <div class="guarantee-box">
+              <span class="guarantee-label">Guaranteed Deliverable:</span>
+              <span class="guarantee-text">Zero uncontrolled hallucinations, schema-compliant outputs, and graceful fallback handling.</span>
+            </div>
+            <div class="tech-pills">
+              <span class="tech-pill pill-cyan">Google ADK</span>
+              <span class="tech-pill pill-cyan">Pydantic V2</span>
+              <span class="tech-pill">Behavioral Guardrails</span>
+            </div>
+          </article>
+
+          <!-- Service 3 -->
+          <article class="service-card">
+            <div class="service-top">
+              <span class="service-number">03</span>
+              <i data-lucide="layers" class="service-icon"></i>
+            </div>
+            <h3 class="service-title">Database Architecture & SQLAlchemy Foundations</h3>
+            <p class="service-desc">
+              Establishing normalized relational schemas, non-blocking connection lifecycles, and generic base repository abstractions for PostgreSQL and SQLite.
+            </p>
+            <div class="guarantee-box">
+              <span class="guarantee-label">Guaranteed Deliverable:</span>
+              <span class="guarantee-text">Zero N+1 query leaks, clean migration history via Alembic, and scalable domain isolation.</span>
+            </div>
+            <div class="tech-pills">
+              <span class="tech-pill">SQLAlchemy 2.0</span>
+              <span class="tech-pill">PostgreSQL</span>
+              <span class="tech-pill">BaseRepository</span>
+            </div>
+          </article>
+
+          <!-- Service 4 -->
+          <article class="service-card">
+            <div class="service-top">
+              <span class="service-number">04</span>
+              <i data-lucide="graduation-cap" class="service-icon"></i>
+            </div>
+            <h3 class="service-title">Python Technical Training & Mentorship</h3>
+            <p class="service-desc">
+              Structured engineering mentoring for developers and teams, progressing from algorithmic fundamentals and memory models to advanced asynchronous architectures.
+            </p>
+            <div class="guarantee-box">
+              <span class="guarantee-label">Guaranteed Deliverable:</span>
+              <span class="guarantee-text">Transforming theoretical understanding into production-ready logical and modular code.</span>
+            </div>
+            <div class="tech-pills">
+              <span class="tech-pill">Python Mentorship</span>
+              <span class="tech-pill">Clean Architecture</span>
+              <span class="tech-pill">Code Reviews</span>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- SECTION 04: PROJECTS & EXPERIENCE -->
+      <section id="projects" class="content-section">
+        <div class="section-header">
+          <span class="section-num">04.</span>
+          <h2 class="section-heading">Featured Projects & Experience</h2>
+        </div>
+
+        <p class="section-intro">
+          A selection of flagship projects and roles showcasing hands-on leadership in backend systems, AI orchestration, and developer education:
+        </p>
+
+        <!-- Group Container for Brittany Chiang Dimming Effect -->
+        <div class="cards-list">
+
+          <!-- Project 1: Child's Nest -->
+          <article class="card project-card">
+            <div class="project-header">
+              <div class="project-meta">
+                <span class="project-timeline">Lead Full-Stack Developer</span>
+                <h3 class="project-title">
+                  Child's Nest — AI Behavioral Modification Platform
+                </h3>
+              </div>
+            </div>
+            <p class="project-body">
+              Engineered a multi-stage sequential agent system utilizing <strong>Google ADK</strong> to generate deeply personalized, interactive behavioral stories for children. Developed real-time WebSocket communication pipelines via <strong>FastAPI</strong> emulating a <em>Gemini Live</em> interaction loop, delivering instant feedback that actively shapes and reinforces positive child behaviors while adhering to rigorous safety guardrails.
+            </p>
+            <div class="tech-pills">
+              <span class="tech-pill pill-accent">Google ADK</span>
+              <span class="tech-pill pill-accent">FastAPI</span>
+              <span class="tech-pill">WebSockets</span>
+              <span class="tech-pill pill-cyan">Gemini Live Pipeline</span>
+              <span class="tech-pill">Pydantic V2</span>
+              <span class="tech-pill">SQLAlchemy</span>
+            </div>
+          </article>
+
+          <!-- Project 2: FastAPI Base Foundation -->
+          <article class="card project-card">
+            <div class="project-header">
+              <div class="project-meta">
+                <span class="project-timeline">Core Architectural Initiative</span>
+                <h3 class="project-title">
+                  FastAPI Base Foundation — Production Enterprise Starter
+                </h3>
+              </div>
+            </div>
+            <p class="project-body">
+              Architected a reusable enterprise backend foundation to standardize production FastAPI applications with zero code duplication. Incorporates a unified <code>BaseRepository</code> pattern with <strong>SQLAlchemy 2.0 AsyncSession</strong>, robust JWT authentication, role-based access control (RBAC), structured JSON audit logging, and strict domain-driven separation between <code>core</code> infrastructure and business <code>modules</code>.
+            </p>
+            <div class="tech-pills">
+              <span class="tech-pill pill-accent">FastAPI</span>
+              <span class="tech-pill">SQLAlchemy 2.0</span>
+              <span class="tech-pill">Async PostgreSQL</span>
+              <span class="tech-pill">JWT / RBAC</span>
+              <span class="tech-pill">Pydantic V2</span>
+              <span class="tech-pill">Generic Repository</span>
+            </div>
+          </article>
+
+          <!-- Experience 3: Python Instructor -->
+          <article class="card project-card">
+            <div class="project-header">
+              <div class="project-meta">
+                <span class="project-timeline">Technical Leadership & Education</span>
+                <h3 class="project-title">
+                  Python Instructor — Technical Leadership & Mentorship
+                </h3>
+              </div>
+            </div>
+            <p class="project-body">
+              Conducted intensive technical training programs mentoring aspiring engineers in Python fundamentals, data structures, functional paradigms, and server concurrency. Instilled rigorous code-review habits, Google-style docstrings, structural typing, and clean architectural patterns to cultivate autonomous software engineers.
+            </p>
+            <div class="tech-pills">
+              <span class="tech-pill pill-accent">Python 3.11+</span>
+              <span class="tech-pill">Data Structures</span>
+              <span class="tech-pill">System Architecture</span>
+              <span class="tech-pill">Mentorship</span>
+              <span class="tech-pill">Code Audits</span>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- SECTION 05: DIRECT CONTACT & INQUIRY FORM -->
+      <section id="contact" class="content-section">
+        <div class="section-header">
+          <span class="section-num">05.</span>
+          <h2 class="section-heading">Direct Contact & Instant Inquiry</h2>
+        </div>
+
+        <p class="section-intro">
+          Have an engineering challenge, an ambitious AI project, or an open role? Reach out immediately via direct channels or send a structured inquiry below:
+        </p>
+
+        <!-- Direct Channels Grid -->
+        <div class="contact-channels-grid">
+          
+          <!-- WhatsApp Ghana -->
+          <a href="https://wa.me/233592121895?text=Hello%20Basel%2C%20I%20visited%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project." target="_blank" rel="noopener" class="contact-channel-card">
+            <div class="channel-icon"><i data-lucide="message-circle"></i></div>
+            <div class="channel-info">
+              <span class="channel-label">Primary WhatsApp (Ghana)</span>
+              <span class="channel-val">+233 59 212 1895</span>
+            </div>
+            <i data-lucide="arrow-up-right" class="channel-arrow"></i>
+          </a>
+
+          <!-- WhatsApp Syria -->
+          <a href="https://wa.me/963967247787?text=Hello%20Basel%2C%20I%20visited%20your%20portfolio%20and%20would%20like%20to%20connect." target="_blank" rel="noopener" class="contact-channel-card">
+            <div class="channel-icon"><i data-lucide="phone"></i></div>
+            <div class="channel-info">
+              <span class="channel-label">Secondary WhatsApp (Syria)</span>
+              <span class="channel-val">+963 967 247 787</span>
+            </div>
+            <i data-lucide="arrow-up-right" class="channel-arrow"></i>
+          </a>
+
+          <!-- Email with Copy Button -->
+          <div class="contact-channel-card email-card">
+            <div class="channel-icon"><i data-lucide="mail"></i></div>
+            <div class="channel-info">
+              <span class="channel-label">Official Email</span>
+              <a href="mailto:baselskaiker21@gmail.com" class="channel-val email-link">baselskaiker21@gmail.com</a>
+            </div>
+            <button type="button" id="copy-email-btn" class="btn btn-outline btn-sm copy-btn" title="Copy email address to clipboard">
+              <i data-lucide="copy"></i>
+              <span id="copy-btn-text">Copy</span>
+            </button>
+          </div>
+
+          <!-- GitHub Profile -->
+          <a href="https://github.com/Ba-se-l" target="_blank" rel="noopener" class="contact-channel-card">
+            <div class="channel-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>
+            </div>
+            <div class="channel-info">
+              <span class="channel-label">GitHub Repository</span>
+              <span class="channel-val">github.com/Ba-se-l</span>
+            </div>
+            <i data-lucide="arrow-up-right" class="channel-arrow"></i>
+          </a>
+
+        </div>
+
+        <!-- Serverless Inquiry Form with Dual Actions (WhatsApp & Email) -->
+        <div class="inquiry-box">
+          <div class="inquiry-header">
+            <i data-lucide="send"></i>
+            <div>
+              <h3 class="inquiry-title">Quick Serverless Inquiry</h3>
+              <p class="inquiry-subtitle">Fill in your requirements; submit directly through WhatsApp or Email without any server dependencies.</p>
+            </div>
+          </div>
+
+          <form id="quick-contact-form" class="contact-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="visitor-name">Your Name</label>
+                <input type="text" id="visitor-name" placeholder="e.g. John Doe" required />
+              </div>
+
+              <div class="form-group">
+                <label for="visitor-service">Service Needed</label>
+                <select id="visitor-service" required>
+                  <option value="FastAPI Backend Development">FastAPI Backend Development</option>
+                  <option value="Multi-Agent AI Systems & LLM Governance">Multi-Agent AI Systems & LLM Governance</option>
+                  <option value="Database Architecture & SQLAlchemy">Database Architecture & SQLAlchemy</option>
+                  <option value="Python Technical Mentorship">Python Technical Mentorship</option>
+                  <option value="Full-Time / Contract Role">Full-Time / Contract Role</option>
+                  <option value="General Technical Consultation">General Technical Consultation</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="visitor-message">Project Brief / Message</label>
+              <textarea id="visitor-message" rows="4" placeholder="Briefly describe your objectives, architecture needs, or timeline..." required></textarea>
+            </div>
+
+            <!-- Dual Action Buttons as requested -->
+            <div class="form-actions">
+              <button type="submit" id="send-whatsapp-btn" class="btn btn-primary">
+                <i data-lucide="message-circle"></i>
+                <span>Send via WhatsApp</span>
+              </button>
+              <button type="button" id="send-email-btn" class="btn btn-outline">
+                <i data-lucide="mail"></i>
+                <span>Send via Email</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </section>
+
+      <!-- Footer -->
+      <footer class="site-footer">
+        <p>
+          Architected & Crafted by <strong>Basel Skayker</strong>. Built strictly with standard <strong>HTML5</strong>, <strong>CSS3</strong>, and <strong>Vanilla JavaScript</strong>.
+        </p>
+        <p class="footer-sub">
+          Deep Dark Navy & Mint Emerald Palette &bull; Fully Fluid Responsive via <code>clamp()</code> &bull; Zero Bloat.
+        </p>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- Main Logic Script -->
+  <script src="script.js"></script>
+</body>
+</html>

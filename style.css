@@ -1,0 +1,1175 @@
+/* ==========================================================================
+   BASEL SKAYKER — PORTFOLIO DESIGN SYSTEM
+   Standard: Modern Fluid CSS via clamp() & Clean Semantic Layering
+   Palette: Dark Navy & Mint Emerald (FastAPI & AI Inspired)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Design Tokens & CSS Custom Properties
+   -------------------------------------------------------------------------- */
+:root {
+  /* Color Palette */
+  --bg-navy: #0a192f;
+  --bg-light-navy: #112240;
+  --bg-lightest-navy: #233554;
+  --bg-card-glass: rgba(17, 34, 64, 0.68);
+  --bg-card-hover: rgba(23, 42, 69, 0.88);
+  
+  --text-lightest-slate: #ccd6f6;
+  --text-slate: #8892b0;
+  --text-muted: #64748b;
+  --text-white: #e6f1ff;
+
+  --accent-green: #64ffda;
+  --accent-green-tint: rgba(100, 255, 218, 0.1);
+  --accent-green-border: rgba(100, 255, 218, 0.3);
+  --accent-cyan: #38bdf8;
+  --accent-cyan-tint: rgba(56, 189, 248, 0.12);
+
+  /* Typography Families */
+  --font-sans: 'Inter', 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', "SFMono-Regular", Consolas, monospace;
+
+  /* Fluid Typography Scale via clamp() */
+  --font-hero: clamp(2rem, 3.8vw + 0.8rem, 3.1rem);
+  --font-subhero: clamp(1.1rem, 1.8vw + 0.3rem, 1.45rem);
+  --font-h2: clamp(1.35rem, 2.2vw + 0.4rem, 1.85rem);
+  --font-h3: clamp(1.05rem, 1.4vw + 0.2rem, 1.25rem);
+  --font-body: clamp(0.925rem, 0.95vw + 0.2rem, 1.025rem);
+  --font-small: clamp(0.775rem, 0.75vw + 0.15rem, 0.875rem);
+  --font-tiny: clamp(0.7rem, 0.65vw + 0.1rem, 0.78rem);
+
+  /* Fluid Spacing Scale via clamp() */
+  --space-3xs: clamp(0.2rem, 0.4vw, 0.35rem);
+  --space-2xs: clamp(0.35rem, 0.6vw, 0.5rem);
+  --space-xs: clamp(0.5rem, 0.8vw, 0.75rem);
+  --space-sm: clamp(0.75rem, 1.2vw, 1rem);
+  --space-md: clamp(1rem, 1.8vw, 1.5rem);
+  --space-lg: clamp(1.5rem, 2.8vw, 2.25rem);
+  --space-xl: clamp(2rem, 4vw, 3.5rem);
+  --space-2xl: clamp(3rem, 6vw, 5rem);
+
+  /* Fluid Layout Radii & Shadows */
+  --radius-sm: clamp(0.35rem, 0.5vw, 0.5rem);
+  --radius-md: clamp(0.6rem, 0.8vw, 0.85rem);
+  --radius-lg: clamp(0.9rem, 1.2vw, 1.25rem);
+  --radius-full: 9999px;
+
+  --shadow-subtle: 0 4px 15px -3px rgba(2, 12, 27, 0.5);
+  --shadow-card: 0 10px 30px -15px rgba(2, 12, 27, 0.7);
+  --shadow-glow: 0 0 25px rgba(100, 255, 218, 0.16);
+
+  /* Dynamic Mouse Coordinates for Spotlight */
+  --mouse-x: 50vw;
+  --mouse-y: 50vh;
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset & Core Base Rules
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 100%;
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg-navy);
+  color: var(--text-slate);
+  font-family: var(--font-sans);
+  font-size: var(--font-body);
+  line-height: 1.65;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* --------------------------------------------------------------------------
+   3. Layer 0: Dimmed & Blurred Python Code Background
+   -------------------------------------------------------------------------- */
+#code-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  gap: clamp(2rem, 5vw, 6rem);
+  padding: clamp(1rem, 3vw, 4rem);
+  opacity: 0.085;
+  filter: blur(1.2px);
+  mask-image: radial-gradient(ellipse 90% 85% at 50% 50%, rgba(0, 0, 0, 1) 40%, rgba(0, 0, 0, 0) 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 85% at 50% 50%, rgba(0, 0, 0, 1) 40%, rgba(0, 0, 0, 0) 100%);
+}
+
+.code-stream {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: clamp(0.725rem, 0.9vw, 0.875rem);
+  line-height: 1.55;
+  color: var(--text-lightest-slate);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.code-stream .kw { color: var(--accent-cyan); font-weight: 600; }
+.code-stream .fn { color: var(--accent-green); }
+.code-stream .cls { color: #f59e0b; font-weight: 600; }
+.code-stream .str { color: #a7f3d0; }
+.code-stream .decorator { color: #c084fc; }
+.code-stream .comment { color: var(--text-muted); font-style: italic; }
+
+@media (max-width: 768px) {
+  #code-backdrop {
+    opacity: 0.055;
+    flex-direction: column;
+    padding: 1rem;
+  }
+  .code-stream.stream-2 {
+    display: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. Layer 1: Cursor Spotlight (Brittany Chiang Signature Effect)
+   -------------------------------------------------------------------------- */
+#spotlight {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    650px circle at var(--mouse-x) var(--mouse-y),
+    rgba(100, 255, 218, 0.075),
+    transparent 80%
+  );
+  transition: opacity 0.3s ease;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  #spotlight {
+    display: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. Layer 2: Main Layout Architecture (.layout-wrapper)
+   -------------------------------------------------------------------------- */
+.layout-wrapper {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: clamp(1000px, 92vw, 1340px);
+  margin: 0 auto;
+  padding: 0 clamp(1.25rem, 4vw, 3.5rem);
+}
+
+/* Desktop Split Layout */
+@media (min-width: 1024px) {
+  .layout-wrapper {
+    display: flex;
+    justify-content: space-between;
+    gap: clamp(2.5rem, 4.5vw, 5rem);
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: clamp(380px, 42%, 460px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Laptop safe clamp padding to avoid clipping on 768px-850px height */
+    padding: clamp(1.5rem, 3.5vh, 4rem) 0;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .sidebar::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+  }
+
+  .main-content {
+    width: clamp(520px, 58%, 780px);
+    padding: clamp(2.5rem, 4.5vh, 4.5rem) 0 clamp(3rem, 6vh, 6rem);
+  }
+}
+
+/* Tablet & Mobile Single Column Stack */
+@media (max-width: 1023px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    padding: clamp(2.5rem, 5vw, 4rem) 0 clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .main-content {
+    width: 100%;
+    padding: clamp(1.5rem, 3vw, 2.5rem) 0 clamp(3rem, 5vw, 4.5rem);
+  }
+
+  .section-nav {
+    display: none; /* Hide scroll-spy on mobile/tablet to avoid clutter */
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6. Sidebar Components
+   -------------------------------------------------------------------------- */
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.65rem, 1.2vh, 1.15rem);
+}
+
+/* Profile Photo Frame */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  flex-wrap: wrap;
+}
+
+.avatar-frame {
+  position: relative;
+  width: clamp(80px, 11vw, 115px);
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 2px solid var(--accent-green);
+  box-shadow: var(--shadow-glow), var(--shadow-subtle);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  background-color: var(--bg-light-navy);
+}
+
+.avatar-frame:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 35px rgba(100, 255, 218, 0.28);
+}
+
+.profile-img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Status Pill */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(0.35rem, 0.5vw, 0.5rem);
+  padding: clamp(0.25rem, 0.5vh, 0.4rem) clamp(0.65rem, 1vw, 0.9rem);
+  background-color: var(--accent-green-tint);
+  border: 1px solid var(--accent-green-border);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: var(--font-tiny);
+  color: var(--accent-green);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Identity Typography */
+.dev-name {
+  font-size: var(--font-hero);
+  font-weight: 800;
+  color: var(--text-lightest-slate);
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.dev-title {
+  font-size: var(--font-subhero);
+  font-weight: 600;
+  color: var(--accent-green);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.location-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-slate);
+  font-size: var(--font-small);
+}
+
+.location-badge i {
+  width: 15px;
+  height: 15px;
+  color: var(--accent-cyan);
+}
+
+.utc-tag {
+  font-family: var(--font-mono);
+  font-size: var(--font-tiny);
+  background-color: var(--bg-lightest-navy);
+  color: var(--text-lightest-slate);
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-sm);
+}
+
+.tagline {
+  color: var(--text-slate);
+  font-size: var(--font-body);
+  line-height: 1.55;
+  max-width: 42ch;
+}
+
+/* Hero Actions */
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1vw, 0.85rem);
+  flex-wrap: wrap;
+  margin-top: clamp(0.25rem, 0.6vh, 0.5rem);
+}
+
+/* Section Navigation (Scroll-Spy) */
+.section-nav {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.4rem, 0.9vh, 0.75rem);
+  margin-top: clamp(0.75rem, 1.8vh, 1.5rem);
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.6rem, 1vw, 1rem);
+  text-decoration: none;
+  padding: clamp(0.3rem, 0.6vh, 0.45rem) 0;
+  transition: all 0.25s ease;
+  group: nav;
+}
+
+.nav-line {
+  height: 1px;
+  width: clamp(1.5rem, 2.2vw, 2.25rem);
+  background-color: var(--text-muted);
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+}
+
+.nav-number {
+  font-family: var(--font-mono);
+  font-size: var(--font-small);
+  color: var(--accent-green);
+  font-weight: 500;
+}
+
+.nav-text {
+  font-size: var(--font-small);
+  font-weight: 600;
+  color: var(--text-slate);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+.nav-link:hover .nav-line,
+.nav-link.active .nav-line {
+  width: clamp(3rem, 4.5vw, 4.25rem);
+  background-color: var(--accent-green);
+}
+
+.nav-link:hover .nav-text,
+.nav-link.active .nav-text {
+  color: var(--text-white);
+  transform: translateX(3px);
+}
+
+/* Social Bar */
+.sidebar-bottom {
+  margin-top: clamp(1rem, 2vh, 1.75rem);
+}
+
+.social-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.85rem, 1.5vw, 1.35rem);
+}
+
+.social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(38px, 4.5vw, 44px);
+  height: clamp(38px, 4.5vw, 44px);
+  border-radius: var(--radius-md);
+  color: var(--text-slate);
+  background-color: var(--bg-light-navy);
+  border: 1px solid var(--bg-lightest-navy);
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+.social-icon i,
+.social-icon svg {
+  width: clamp(18px, 2vw, 21px);
+  height: clamp(18px, 2vw, 21px);
+}
+
+.social-icon:hover {
+  color: var(--accent-green);
+  border-color: var(--accent-green-border);
+  background-color: var(--accent-green-tint);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(100, 255, 218, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   7. Buttons Design System
+   -------------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.4rem, 0.6vw, 0.6rem);
+  padding: clamp(0.55rem, 1.2vh, 0.8rem) clamp(1rem, 2vw, 1.4rem);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: var(--font-small);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  min-height: 42px;
+  line-height: 1;
+}
+
+.btn i {
+  width: clamp(16px, 1.8vw, 18px);
+  height: clamp(16px, 1.8vw, 18px);
+}
+
+.btn-primary {
+  background-color: var(--accent-green);
+  color: #020c1b;
+  border-color: var(--accent-green);
+}
+
+.btn-primary:hover {
+  background-color: #8effe2;
+  box-shadow: 0 0 25px rgba(100, 255, 218, 0.35);
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--accent-green);
+  border-color: var(--accent-green);
+}
+
+.btn-outline:hover {
+  background-color: var(--accent-green-tint);
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(100, 255, 218, 0.2);
+}
+
+.btn-sm {
+  padding: clamp(0.4rem, 0.8vh, 0.55rem) clamp(0.75rem, 1.2vw, 1rem);
+  font-size: var(--font-tiny);
+  min-height: 36px;
+}
+
+/* --------------------------------------------------------------------------
+   8. Main Content & Sections
+   -------------------------------------------------------------------------- */
+.content-section {
+  padding-bottom: clamp(3rem, 6vh, 5.5rem);
+  scroll-margin-top: clamp(2rem, 4vh, 4rem);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1vw, 0.75rem);
+  margin-bottom: clamp(1rem, 2vh, 1.5rem);
+  position: relative;
+}
+
+.section-num {
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  color: var(--accent-green);
+  font-weight: 600;
+}
+
+.section-heading {
+  font-size: var(--font-h2);
+  font-weight: 700;
+  color: var(--text-lightest-slate);
+  letter-spacing: -0.015em;
+}
+
+.section-intro {
+  font-size: var(--font-body);
+  color: var(--text-slate);
+  margin-bottom: clamp(1.25rem, 2.5vh, 2rem);
+  line-height: 1.6;
+}
+
+.section-body p {
+  margin-bottom: clamp(0.85rem, 1.5vh, 1.25rem);
+  font-size: var(--font-body);
+  line-height: 1.7;
+}
+
+.lead-text {
+  font-size: clamp(1rem, 1.15vw + 0.2rem, 1.15rem);
+  color: var(--text-lightest-slate);
+}
+
+strong {
+  color: var(--text-white);
+  font-weight: 600;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--accent-green);
+  background-color: var(--bg-light-navy);
+  padding: 0.15rem 0.35rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--bg-lightest-navy);
+}
+
+/* Bilingual Capability Card */
+.bilingual-card {
+  display: flex;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  background-color: var(--bg-card-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--bg-lightest-navy);
+  border-radius: var(--radius-md);
+  padding: clamp(1rem, 1.8vw, 1.35rem);
+  margin: clamp(1.25rem, 2.5vh, 1.75rem) 0;
+}
+
+.lang-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.lang-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  color: var(--text-lightest-slate);
+  font-size: var(--font-small);
+}
+
+.lang-title i {
+  width: 15px;
+  height: 15px;
+  color: var(--accent-cyan);
+}
+
+.lang-desc {
+  font-size: var(--font-tiny);
+  color: var(--text-slate);
+  line-height: 1.5;
+}
+
+.lang-divider {
+  width: 1px;
+  background-color: var(--bg-lightest-navy);
+}
+
+@media (max-width: 640px) {
+  .bilingual-card {
+    flex-direction: column;
+  }
+  .lang-divider {
+    width: 100%;
+    height: 1px;
+  }
+}
+
+/* CV Highlight Card */
+.cv-highlight-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  background-color: var(--bg-light-navy);
+  border: 1px solid var(--accent-green-border);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.15rem, 2vw, 1.6rem);
+  margin-top: clamp(1.25rem, 2.5vh, 1.75rem);
+  box-shadow: var(--shadow-card);
+}
+
+.cv-info {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+.cv-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(42px, 5vw, 50px);
+  height: clamp(42px, 5vw, 50px);
+  border-radius: var(--radius-md);
+  background-color: var(--accent-green-tint);
+  color: var(--accent-green);
+  flex-shrink: 0;
+}
+
+.cv-icon i {
+  width: clamp(22px, 2.5vw, 26px);
+  height: clamp(22px, 2.5vw, 26px);
+}
+
+.cv-title {
+  font-size: var(--font-h3);
+  color: var(--text-lightest-slate);
+  font-weight: 600;
+}
+
+.cv-subtitle {
+  font-size: var(--font-small);
+  color: var(--text-slate);
+}
+
+.cv-actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1vw, 0.75rem);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .cv-highlight-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cv-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   9. Tech Pills (Badges)
+   -------------------------------------------------------------------------- */
+.tech-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.35rem, 0.6vw, 0.5rem);
+  margin-top: clamp(0.75rem, 1.2vh, 1rem);
+}
+
+.tech-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: clamp(0.2rem, 0.4vh, 0.35rem) clamp(0.55rem, 0.8vw, 0.75rem);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: var(--font-tiny);
+  font-weight: 500;
+  color: var(--text-lightest-slate);
+  background-color: var(--bg-lightest-navy);
+  border: 1px solid rgba(136, 146, 176, 0.15);
+  transition: all 0.2s ease;
+}
+
+.tech-pill:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-green-border);
+}
+
+.tech-pill.pill-accent {
+  color: var(--accent-green);
+  background-color: var(--accent-green-tint);
+  border-color: var(--accent-green-border);
+}
+
+.tech-pill.pill-cyan {
+  color: var(--accent-cyan);
+  background-color: var(--accent-cyan-tint);
+  border-color: rgba(56, 189, 248, 0.25);
+}
+
+/* --------------------------------------------------------------------------
+   10. Skills Grid
+   -------------------------------------------------------------------------- */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(250px, 45%, 340px), 1fr));
+  gap: clamp(1rem, 1.8vw, 1.5rem);
+}
+
+.skill-card {
+  background-color: var(--bg-card-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--bg-lightest-navy);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.25rem, 2vw, 1.6rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.skill-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-green-border);
+  box-shadow: var(--shadow-card);
+}
+
+.skill-icon-header {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.6rem, 1vw, 0.85rem);
+  margin-bottom: clamp(0.6rem, 1vh, 0.85rem);
+}
+
+.icon-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(34px, 4vw, 40px);
+  height: clamp(34px, 4vw, 40px);
+  border-radius: var(--radius-sm);
+  background-color: var(--accent-green-tint);
+  color: var(--accent-green);
+}
+
+.icon-box i {
+  width: 20px;
+  height: 20px;
+}
+
+.skill-title {
+  font-size: var(--font-h3);
+  font-weight: 600;
+  color: var(--text-lightest-slate);
+}
+
+.skill-desc {
+  font-size: var(--font-small);
+  color: var(--text-slate);
+  line-height: 1.55;
+  margin-bottom: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   11. Services Grid
+   -------------------------------------------------------------------------- */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(260px, 48%, 360px), 1fr));
+  gap: clamp(1.15rem, 2vw, 1.65rem);
+}
+
+.service-card {
+  background-color: var(--bg-card-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--bg-lightest-navy);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.35rem, 2.2vw, 1.85rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.25s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 15px 35px -15px rgba(2, 12, 27, 0.8);
+}
+
+.service-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: clamp(0.75rem, 1.2vh, 1rem);
+}
+
+.service-number {
+  font-family: var(--font-mono);
+  font-size: var(--font-small);
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.service-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--accent-cyan);
+}
+
+.service-title {
+  font-size: var(--font-h3);
+  font-weight: 700;
+  color: var(--text-lightest-slate);
+  line-height: 1.35;
+  margin-bottom: clamp(0.6rem, 1vh, 0.85rem);
+}
+
+.service-desc {
+  font-size: var(--font-small);
+  color: var(--text-slate);
+  line-height: 1.6;
+  margin-bottom: clamp(0.75rem, 1.2vh, 1rem);
+}
+
+.guarantee-box {
+  background-color: rgba(10, 25, 47, 0.6);
+  border-left: 2px solid var(--accent-green);
+  padding: clamp(0.5rem, 0.8vh, 0.75rem) clamp(0.65rem, 1vw, 0.9rem);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: 0.5rem;
+}
+
+.guarantee-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--font-tiny);
+  color: var(--accent-green);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.guarantee-text {
+  font-size: var(--font-tiny);
+  color: var(--text-lightest-slate);
+  line-height: 1.45;
+}
+
+/* --------------------------------------------------------------------------
+   12. Projects & Experience (Brittany Chiang Group Dimming)
+   -------------------------------------------------------------------------- */
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 2.2vw, 2rem);
+}
+
+/* Brittany Chiang Dimming: dim siblings on hover */
+@media (hover: hover) {
+  .cards-list:hover .card:not(:hover) {
+    opacity: 0.42;
+    filter: grayscale(15%);
+  }
+}
+
+.card {
+  position: relative;
+  background-color: var(--bg-card-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--bg-lightest-navy);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.4rem, 2.4vw, 2rem);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--accent-green-border);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card);
+}
+
+.project-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: clamp(0.65rem, 1.2vh, 0.95rem);
+}
+
+.project-timeline {
+  font-family: var(--font-mono);
+  font-size: var(--font-tiny);
+  color: var(--accent-green);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.project-title {
+  font-size: var(--font-h3);
+  font-weight: 700;
+  color: var(--text-lightest-slate);
+  line-height: 1.35;
+}
+
+.project-body {
+  font-size: var(--font-small);
+  color: var(--text-slate);
+  line-height: 1.65;
+}
+
+.project-body strong {
+  color: var(--text-lightest-slate);
+}
+
+/* --------------------------------------------------------------------------
+   13. Contact Channels & Serverless Form
+   -------------------------------------------------------------------------- */
+.contact-channels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(240px, 45%, 320px), 1fr));
+  gap: clamp(0.85rem, 1.5vw, 1.25rem);
+  margin-bottom: clamp(1.5rem, 3vh, 2.5rem);
+}
+
+.contact-channel-card {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 1.2vw, 1rem);
+  background-color: var(--bg-card-glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--bg-lightest-navy);
+  border-radius: var(--radius-md);
+  padding: clamp(0.85rem, 1.5vw, 1.25rem);
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.contact-channel-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-green-border);
+  background-color: var(--bg-light-navy);
+}
+
+.channel-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(38px, 4vw, 44px);
+  height: clamp(38px, 4vw, 44px);
+  border-radius: var(--radius-sm);
+  background-color: var(--accent-green-tint);
+  color: var(--accent-green);
+  flex-shrink: 0;
+}
+
+.channel-icon i,
+.channel-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.channel-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.channel-label {
+  font-size: var(--font-tiny);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+
+.channel-val {
+  font-size: var(--font-small);
+  color: var(--text-lightest-slate);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.channel-arrow {
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  transition: transform 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.contact-channel-card:hover .channel-arrow {
+  color: var(--accent-green);
+  transform: translate(2px, -2px);
+}
+
+.email-card {
+  justify-content: space-between;
+}
+
+.email-link {
+  text-decoration: none;
+}
+
+.copy-btn {
+  flex-shrink: 0;
+}
+
+/* Inquiry Box & Serverless Form */
+.inquiry-box {
+  background-color: var(--bg-card-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--bg-lightest-navy);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.4rem, 2.5vw, 2.25rem);
+}
+
+.inquiry-header {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(0.75rem, 1.2vw, 1rem);
+  margin-bottom: clamp(1.15rem, 2vh, 1.6rem);
+}
+
+.inquiry-header i {
+  width: clamp(24px, 3vw, 28px);
+  height: clamp(24px, 3vw, 28px);
+  color: var(--accent-green);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.inquiry-title {
+  font-size: var(--font-h3);
+  color: var(--text-lightest-slate);
+  font-weight: 700;
+}
+
+.inquiry-subtitle {
+  font-size: var(--font-small);
+  color: var(--text-slate);
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.85rem, 1.5vh, 1.25rem);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 45%, 1fr), 1fr));
+  gap: clamp(0.85rem, 1.5vw, 1.25rem);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-group label {
+  font-family: var(--font-mono);
+  font-size: var(--font-tiny);
+  color: var(--text-lightest-slate);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  background-color: var(--bg-light-navy);
+  border: 1px solid var(--bg-lightest-navy);
+  border-radius: var(--radius-sm);
+  padding: clamp(0.55rem, 1vh, 0.75rem) clamp(0.75rem, 1.2vw, 1rem);
+  color: var(--text-white);
+  font-family: var(--font-sans);
+  font-size: var(--font-small);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 3px var(--accent-green-tint);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   14. Footer
+   -------------------------------------------------------------------------- */
+.site-footer {
+  padding-top: clamp(2rem, 4vh, 3.5rem);
+  border-top: 1px solid var(--bg-lightest-navy);
+  font-size: var(--font-small);
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.site-footer strong {
+  color: var(--text-lightest-slate);
+}
+
+.footer-sub {
+  font-family: var(--font-mono);
+  font-size: var(--font-tiny);
+  margin-top: 0.35rem;
+}
+
+/* --------------------------------------------------------------------------
+   15. Accessibility & Reduced Motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
