@@ -855,9 +855,17 @@ class PortfolioRenderer {
     if (copyEmailBtn) {
       copyEmailBtn.addEventListener("click", async () => {
         try {
+          let copied = false;
           if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(emailAddress);
-          } else {
+            try {
+              await navigator.clipboard.writeText(emailAddress);
+              copied = true;
+            } catch (clipErr) {
+              // Fallback to execCommand if clipboard API permission denied
+            }
+          }
+
+          if (!copied) {
             const tempTextArea = document.createElement("textarea");
             tempTextArea.value = emailAddress;
             tempTextArea.style.position = "fixed";
