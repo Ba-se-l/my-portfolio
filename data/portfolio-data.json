@@ -1,0 +1,368 @@
+{
+  "meta": {
+    "lastUpdated": "2026-11-07",
+    "version": "2.0.0",
+    "system": "Antigravity Dynamic Portfolio Engine"
+  },
+  "profile": {
+    "fullName": "Basel Skayker",
+    "headline": "Python Backend & AI Developer",
+    "location": "Accra, Ghana",
+    "utcTag": "UTC+0",
+    "statusBadge": "Available for Projects & Roles",
+    "avatarUrl": "static/public/my-image.jfif",
+    "cvUrl": "static/public/cv.pdf",
+    "shortBio": "Architecting high-performance asynchronous FastAPI backends, resilient SQLAlchemy databases, and reliable multi-agent AI systems governed by strict schemas.",
+    "primaryActions": [
+      {
+        "id": "act-cv",
+        "label": "View / Download CV",
+        "url": "static/public/cv.pdf",
+        "icon": "file-text",
+        "style": "btn-primary",
+        "external": true,
+        "download": false
+      },
+      {
+        "id": "act-wa",
+        "label": "WhatsApp Me",
+        "url": "https://wa.me/233592121895?text=Hello%20Basel%2C%20I%20visited%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project.",
+        "icon": "message-circle",
+        "style": "btn-outline",
+        "external": true,
+        "download": false
+      }
+    ],
+    "socialLinks": [
+      {
+        "id": "soc-gh",
+        "platform": "GitHub",
+        "url": "https://github.com/Ba-se-l",
+        "icon": "github",
+        "type": "svg"
+      },
+      {
+        "id": "soc-em",
+        "platform": "Email",
+        "url": "mailto:baselskaiker21@gmail.com",
+        "icon": "mail",
+        "type": "lucide"
+      },
+      {
+        "id": "soc-wa-gh",
+        "platform": "WhatsApp Ghana",
+        "url": "https://wa.me/233592121895",
+        "icon": "phone",
+        "type": "lucide"
+      },
+      {
+        "id": "soc-wa-sy",
+        "platform": "WhatsApp Syria",
+        "url": "https://wa.me/963967247787",
+        "icon": "message-square",
+        "type": "lucide"
+      },
+      {
+        "id": "soc-in",
+        "platform": "LinkedIn",
+        "url": "https://www.linkedin.com/in/baselskaiker-9602601a9/",
+        "icon": "linkedin",
+        "type": "svg"
+      },
+      {
+        "id": "soc-contact",
+        "platform": "Direct Inquiry Form",
+        "url": "#contact",
+        "icon": "send",
+        "type": "lucide"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "id": "about",
+      "enabled": true,
+      "navTitle": "About & CV",
+      "heading": "About & Professional Vision",
+      "layoutType": "RichTextAndCV",
+      "leadParagraph": "I am a <strong>Python Backend & AI Developer</strong> currently based in <strong>Accra, Ghana</strong>. My engineering methodology is grounded in deep logical problem-solving, clean architectural modularity, and crafting AI applications that deliver tangible, positive human impact.",
+      "paragraphs": [
+        "Rather than treating backend development as superficial glue code, I specialize in engineering resilient server infrastructures using <strong>FastAPI</strong>, <strong>SQLAlchemy 2.0 ORM</strong>, and <strong>Asyncio</strong>. In artificial intelligence, I design multi-agent chains with <strong>Google ADK</strong> and enforce strict schema boundary validation using <strong>Pydantic V2</strong> and Enums to completely eliminate hallucinations."
+      ],
+      "bilingual": {
+        "arabic": {
+          "title": "Arabic (العربية)",
+          "desc": "Native Language — لغة أم، تواصل فوري وصياغة دقيقة."
+        },
+        "english": {
+          "title": "English (Technical B1)",
+          "desc": "Strong reading & writing proficiency for documentation, PR reviews, and technical collaboration."
+        }
+      },
+      "cvCard": {
+        "title": "Verified Official Curriculum Vitae",
+        "subtitle": "Full breakdown of backend engineering milestones, academic background, and technical projects.",
+        "viewUrl": "static/public/cv.pdf",
+        "downloadUrl": "static/public/cv.pdf",
+        "downloadFileName": "Basel_Skayker_CV.pdf"
+      }
+    },
+    {
+      "id": "skills",
+      "enabled": true,
+      "navTitle": "Technical Skills",
+      "heading": "Technical Skills & Architecture",
+      "intro": "Specialized technical competencies categorized by engineering domains, focused on deterministic execution, concurrency, and clean data boundaries:",
+      "layoutType": "SkillCategoriesGrid",
+      "items": [
+        {
+          "id": "skill-cat-1",
+          "title": "Backend & Concurrency",
+          "icon": "server",
+          "description": "High-throughput asynchronous systems, concurrent I/O handling, and resilient RESTful architectures.",
+          "tags": [
+            "Python (Expert)",
+            "FastAPI",
+            "Asyncio / Concurrency",
+            "WebSockets",
+            "RESTful APIs",
+            "Starlette"
+          ]
+        },
+        {
+          "id": "skill-cat-2",
+          "title": "AI Architecture & Data Integrity",
+          "icon": "cpu",
+          "description": "Multi-agent generative pipelines with strict schema boundaries to guarantee predictable outputs.",
+          "tags": [
+            "Google ADK / SDK",
+            "Pydantic V2",
+            "Strict Enums",
+            "Sequential Agent Chains",
+            "Output Validation"
+          ]
+        },
+        {
+          "id": "skill-cat-3",
+          "title": "Database Management & ORM",
+          "icon": "database",
+          "description": "Relational schemas, connection pooling, non-blocking asynchronous queries, and generic repositories.",
+          "tags": [
+            "SQLAlchemy 2.0 ORM",
+            "AsyncSession",
+            "PostgreSQL",
+            "SQLite",
+            "Generic BaseRepository",
+            "Alembic"
+          ]
+        },
+        {
+          "id": "skill-cat-4",
+          "title": "AI Governance & Ecosystem",
+          "icon": "shield-check",
+          "description": "Behavioral constitutions for LLMs (Gemini / Claude) to prevent hallucination, paired with modern developer workflows.",
+          "tags": [
+            "Gemini & Claude",
+            "AI Constitutions",
+            "Anti-Hallucination Guardrails",
+            "VS Code",
+            "GitHub",
+            "Codeberg"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "services",
+      "enabled": true,
+      "navTitle": "Services & Value",
+      "heading": "Services & Value Proposition",
+      "intro": "What I deliver to companies, clients, and engineering teams with guaranteed engineering metrics:",
+      "layoutType": "ServicesGrid",
+      "items": [
+        {
+          "id": "srv-1",
+          "number": "01",
+          "title": "High-Performance FastAPI Backend Architecture",
+          "icon": "zap",
+          "description": "Design and implementation of non-blocking backend microservices with automatic OpenAPI interactive documentation, bulletproof authentication, and granular RBAC authorization.",
+          "guarantee": "Sub-100ms response latencies, zero thread starvation, and comprehensive audit logging.",
+          "tags": [
+            "FastAPI",
+            "Asyncio",
+            "JWT / RBAC",
+            "Audit Trail"
+          ]
+        },
+        {
+          "id": "srv-2",
+          "number": "02",
+          "title": "Multi-Agent AI Systems & LLM Governance",
+          "icon": "bot",
+          "description": "Architecting multi-agent generative loops via Google ADK and leading LLMs (Gemini, Claude), constrained by strict behavioral constitutions and Pydantic validation barriers.",
+          "guarantee": "Zero uncontrolled hallucinations, schema-compliant outputs, and graceful fallback handling.",
+          "tags": [
+            "Google ADK",
+            "Pydantic V2",
+            "Behavioral Guardrails"
+          ]
+        },
+        {
+          "id": "srv-3",
+          "number": "03",
+          "title": "Database Architecture & SQLAlchemy Foundations",
+          "icon": "layers",
+          "description": "Establishing normalized relational schemas, non-blocking connection lifecycles, and generic base repository abstractions for PostgreSQL and SQLite.",
+          "guarantee": "Zero N+1 query leaks, clean migration history via Alembic, and scalable domain isolation.",
+          "tags": [
+            "SQLAlchemy 2.0",
+            "PostgreSQL",
+            "BaseRepository"
+          ]
+        },
+        {
+          "id": "srv-4",
+          "number": "04",
+          "title": "Python Technical Training & Mentorship",
+          "icon": "graduation-cap",
+          "description": "Structured engineering mentoring for developers and teams, progressing from algorithmic fundamentals and memory models to advanced asynchronous architectures.",
+          "guarantee": "Transforming theoretical understanding into production-ready logical and modular code.",
+          "tags": [
+            "Python Mentorship",
+            "Clean Architecture",
+            "Code Reviews"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "projects",
+      "enabled": true,
+      "navTitle": "Projects & Experience",
+      "heading": "Featured Projects & Experience",
+      "intro": "A selection of flagship projects and roles showcasing hands-on leadership in backend systems, AI orchestration, and developer education:",
+      "layoutType": "ProjectsAndTimeline",
+      "items": [
+        {
+          "id": "proj-1",
+          "title": "Child's Nest — AI Behavioral Modification Platform",
+          "role": "Lead Full-Stack Developer",
+          "period": "Flagship AI System",
+          "description": "Engineered a multi-stage sequential agent system utilizing <strong>Google ADK</strong> to generate deeply personalized, interactive behavioral stories for children. Developed real-time WebSocket communication pipelines via <strong>FastAPI</strong> emulating a <em>Gemini Live</em> interaction loop, delivering instant feedback that actively shapes and reinforces positive child behaviors while adhering to rigorous safety guardrails.",
+          "links": [
+            {
+              "label": "Architecture Case Study",
+              "url": "#contact",
+              "icon": "external-link"
+            }
+          ],
+          "tags": [
+            "Google ADK",
+            "FastAPI",
+            "WebSockets",
+            "Gemini Live Pipeline",
+            "Pydantic V2",
+            "SQLAlchemy"
+          ]
+        },
+        {
+          "id": "proj-2",
+          "title": "FastAPI Base Foundation — Production Enterprise Starter",
+          "role": "Core Architectural Initiative",
+          "period": "Active Daily R&D",
+          "description": "Architected a reusable enterprise backend foundation to standardize production FastAPI applications with zero code duplication. Incorporates a unified <code>BaseRepository</code> pattern with <strong>SQLAlchemy 2.0 AsyncSession</strong>, robust JWT authentication, role-based access control (RBAC), structured JSON audit logging, and strict domain-driven separation between <code>core</code> infrastructure and business <code>modules</code>.",
+          "links": [
+            {
+              "label": "GitHub Profile",
+              "url": "https://github.com/Ba-se-l",
+              "icon": "github"
+            }
+          ],
+          "tags": [
+            "FastAPI",
+            "SQLAlchemy 2.0",
+            "Async PostgreSQL",
+            "JWT / RBAC",
+            "Pydantic V2",
+            "Generic Repository"
+          ]
+        },
+        {
+          "id": "proj-3",
+          "title": "Python Instructor — Technical Leadership & Mentorship",
+          "role": "Technical Leadership & Education",
+          "period": "Knowledge Transfer",
+          "description": "Conducted intensive technical training programs mentoring aspiring engineers in Python fundamentals, data structures, functional paradigms, and server concurrency. Instilled rigorous code-review habits, Google-style docstrings, structural typing, and clean architectural patterns to cultivate autonomous software engineers.",
+          "links": [],
+          "tags": [
+            "Python 3.11+",
+            "Data Structures",
+            "System Architecture",
+            "Mentorship",
+            "Code Audits"
+          ]
+        }
+      ]
+    }
+  ],
+  "contact": {
+    "id": "contact",
+    "navTitle": "Direct Contact",
+    "heading": "Direct Contact & Instant Inquiry",
+    "intro": "Have an engineering challenge, an ambitious AI project, or an open role? Reach out immediately via direct channels or send a structured inquiry below:",
+    "email": "baselskaiker21@gmail.com",
+    "whatsappPrimary": "+233592121895",
+    "whatsappSecondary": "+963967247787",
+    "channels": [
+      {
+        "id": "ch-wa-gh",
+        "label": "Primary WhatsApp (Ghana)",
+        "value": "+233 59 212 1895",
+        "url": "https://wa.me/233592121895?text=Hello%20Basel%2C%20I%20visited%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project.",
+        "icon": "message-circle",
+        "badge": "Instant Chat"
+      },
+      {
+        "id": "ch-wa-sy",
+        "label": "Secondary WhatsApp (Syria)",
+        "value": "+963 967 247 787",
+        "url": "https://wa.me/963967247787?text=Hello%20Basel%2C%20I%20visited%20your%20portfolio%20and%20would%20like%20to%20connect.",
+        "icon": "phone",
+        "badge": "Direct Line"
+      },
+      {
+        "id": "ch-email",
+        "label": "Official Email",
+        "value": "baselskaiker21@gmail.com",
+        "url": "mailto:baselskaiker21@gmail.com",
+        "icon": "mail",
+        "badge": "One-Click Copy",
+        "isCopy": true
+      },
+      {
+        "id": "ch-github",
+        "label": "GitHub Repository",
+        "value": "github.com/Ba-se-l",
+        "url": "https://github.com/Ba-se-l",
+        "icon": "github",
+        "badge": "Source Code"
+      }
+    ],
+    "form": {
+      "title": "Quick Serverless Inquiry",
+      "subtitle": "Fill in your requirements; submit directly through WhatsApp or Email without any server dependencies.",
+      "serviceOptions": [
+        "FastAPI Backend Development",
+        "Multi-Agent AI Systems & LLM Governance",
+        "Database Architecture & SQLAlchemy",
+        "Python Technical Mentorship",
+        "Full-Time / Contract Role",
+        "General Technical Consultation"
+      ]
+    }
+  },
+  "footer": {
+    "text": "Architected & Crafted by <strong>Basel Skayker</strong>. Built strictly with standard <strong>HTML5</strong>, <strong>CSS3</strong>, and <strong>Vanilla JavaScript</strong>.",
+    "subtext": "Deep Dark Navy & Mint Emerald Palette &bull; Fully Fluid Responsive via <code>clamp()</code> &bull; Zero Bloat."
+  }
+}

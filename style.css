@@ -1163,6 +1163,149 @@ code {
 }
 
 /* --------------------------------------------------------------------------
+   14. Dynamic Section Components & Preview Banner
+   -------------------------------------------------------------------------- */
+.preview-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: var(--bg-light-navy);
+  border-bottom: 2px solid var(--accent-green);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  padding: 0.65rem clamp(1rem, 3vw, 2.5rem);
+  animation: slideDown 0.3s ease-out;
+}
+
+.preview-banner[hidden] {
+  display: none !important;
+}
+
+.preview-banner-inner {
+  max-width: clamp(1000px, 92vw, 1340px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: var(--font-small);
+  color: var(--text-lightest-slate);
+}
+
+.preview-badge {
+  font-family: var(--font-mono);
+  font-size: var(--font-tiny);
+  font-weight: 700;
+  color: #020c1b;
+  background-color: var(--accent-green);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+.project-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1vw, 0.85rem);
+  margin-top: clamp(0.6rem, 1vh, 0.85rem);
+  flex-wrap: wrap;
+}
+
+.project-link-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: var(--font-tiny);
+  color: var(--accent-green);
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.project-link-item:hover {
+  color: #8effe2;
+  transform: translateX(2px);
+}
+
+.project-link-item i,
+.project-link-item svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Custom Cards Grid (for dynamic custom sections like Certifications, Articles) */
+.custom-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(250px, 45%, 340px), 1fr));
+  gap: clamp(1rem, 1.8vw, 1.5rem);
+}
+
+.custom-card {
+  background-color: var(--bg-card-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--bg-lightest-navy);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.25rem, 2vw, 1.6rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.custom-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-cyan);
+  box-shadow: var(--shadow-card);
+}
+
+.custom-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.custom-card-badge {
+  font-family: var(--font-mono);
+  font-size: var(--font-tiny);
+  color: var(--accent-cyan);
+  background-color: var(--accent-cyan-tint);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+}
+
+.custom-card-title {
+  font-size: var(--font-h3);
+  font-weight: 700;
+  color: var(--text-lightest-slate);
+  line-height: 1.35;
+}
+
+.custom-card-subtitle {
+  font-size: var(--font-small);
+  color: var(--accent-green);
+  font-family: var(--font-mono);
+  margin-bottom: 0.5rem;
+}
+
+.custom-card-desc {
+  font-size: var(--font-small);
+  color: var(--text-slate);
+  line-height: 1.55;
+  margin-bottom: 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
    15. Accessibility & Reduced Motion
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {

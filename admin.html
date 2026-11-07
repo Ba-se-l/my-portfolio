@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basel Skayker | Visual CMS Studio</title>
+  <meta name="description" content="Visual Content Management Studio for Basel Skayker Developer Portfolio" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="admin.css" />
+
+  <!-- Lucide Icons Vanilla JS CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Layer 0: Code Background -->
+  <div id="code-backdrop" aria-hidden="true">
+    <pre><code>from fastapi import APIRouter, Depends, status
+from pydantic import BaseModel, Field
+# Basel Skayker Dynamic Content Studio
+# Git-Backed Hybrid Visual CMS
+@router.put("/data/portfolio-data.json")
+async def sync_portfolio_state(payload: PortfolioSchema):
+    return {"status": "synced", "version": "2.0.0"}</code></pre>
+  </div>
+
+  <div class="studio-wrapper">
+
+    <!-- Top Sticky Header Bar -->
+    <header class="studio-header">
+      <div class="studio-header-inner">
+        <div class="brand-group">
+          <div class="studio-logo">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Portfolio Studio</span>
+          </div>
+          <span class="studio-badge">Dynamic CMS v2.0</span>
+          <div class="sync-status" id="sync-status">
+            <span class="sync-dot"></span>
+            <span id="sync-status-text">All Changes Synced</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button type="button" id="btn-preview" class="btn btn-outline btn-sm" title="Preview changes in a new tab">
+            <i data-lucide="external-link"></i>
+            <span>Live Preview</span>
+          </button>
+
+          <button type="button" id="btn-save-disk" class="btn btn-secondary btn-sm" title="Save directly to data/portfolio-data.json">
+            <i data-lucide="save"></i>
+            <span>Save to Disk</span>
+          </button>
+
+          <button type="button" id="btn-download-json" class="btn btn-secondary btn-sm" title="Export portfolio-data.json">
+            <i data-lucide="download"></i>
+            <span>Export JSON</span>
+          </button>
+
+          <button type="button" id="btn-import-json" class="btn btn-secondary btn-sm" title="Import JSON file">
+            <i data-lucide="upload"></i>
+            <span>Import</span>
+          </button>
+
+          <button type="button" id="btn-github-settings" class="btn btn-secondary btn-sm" title="Configure GitHub API Token">
+            <i data-lucide="settings"></i>
+            <span>GitHub Sync</span>
+          </button>
+
+          <button type="button" id="btn-publish-github" class="btn btn-primary btn-sm" title="Commit and push changes to GitHub repository">
+            <i data-lucide="git-pull-request"></i>
+            <span>Publish to GitHub</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Studio Main Grid -->
+    <main class="studio-main">
+
+      <!-- Left Sidebar Navigation -->
+      <aside class="studio-sidebar">
+        
+        <div>
+          <div class="sidebar-heading">Core Entity</div>
+          <button type="button" class="nav-item-btn active" id="nav-btn-profile" data-tab="profile">
+            <div class="nav-item-left">
+              <i data-lucide="user-check"></i>
+              <span>Profile & Identity</span>
+            </div>
+          </button>
+        </div>
+
+        <div>
+          <div class="sidebar-heading" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Dynamic Sections</span>
+            <span id="sections-count" class="studio-badge" style="font-size: 0.65rem; padding: 0.1rem 0.4rem;">0</span>
+          </div>
+
+          <div class="nav-sections-list" id="sections-nav-list">
+            <!-- Dynamically populated sections list with reorder and toggle controls -->
+          </div>
+
+          <button type="button" id="btn-add-section" class="btn btn-outline btn-sm" style="width: 100%; margin-top: 0.75rem;">
+            <i data-lucide="plus-circle"></i>
+            <span>Add New Section</span>
+          </button>
+        </div>
+
+        <div>
+          <div class="sidebar-heading">Outreach</div>
+          <button type="button" class="nav-item-btn" id="nav-btn-contact" data-tab="contact">
+            <div class="nav-item-left">
+              <i data-lucide="message-square"></i>
+              <span>Contact & Channels</span>
+            </div>
+          </button>
+        </div>
+
+      </aside>
+
+      <!-- Right Active Canvas -->
+      <section class="studio-canvas" id="canvas-container">
+        <!-- Rendered dynamically by admin.js according to active tab or section -->
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Modal: Add New Section -->
+  <div class="modal-backdrop" id="modal-add-section" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="folder-plus"></i> Add New Dynamic Section</h3>
+        <button type="button" class="modal-close" id="btn-close-add-modal"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="form-group">
+        <label for="new-sec-id">Section ID (Anchor URL)</label>
+        <input type="text" id="new-sec-id" placeholder="e.g. certifications, open-source, articles" required />
+      </div>
+
+      <div class="form-group">
+        <label for="new-sec-navtitle">Sidebar Nav Title</label>
+        <input type="text" id="new-sec-navtitle" placeholder="e.g. Certifications & Badges" required />
+      </div>
+
+      <div class="form-group">
+        <label for="new-sec-heading">Main Section Heading</label>
+        <input type="text" id="new-sec-heading" placeholder="e.g. Professional Certifications & Continuous R&D" required />
+      </div>
+
+      <div class="form-group">
+        <label for="new-sec-layout">Layout Style Type</label>
+        <select id="new-sec-layout">
+          <option value="CustomCardsGrid">Custom Cards Grid (Flexible cards for certifications, posts, repos)</option>
+          <option value="ProjectsAndTimeline">Projects & Timeline (Hover-dimmed cards with links & tags)</option>
+          <option value="SkillCategoriesGrid">Skill Categories Grid (Categorized badges & domain pills)</option>
+          <option value="ServicesGrid">Services Grid (Deliverables & guarantees)</option>
+          <option value="RichTextAndCV">Rich Text & Highlights (Lead text, paragraphs, cards)</option>
+        </select>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-add-section">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-add-section">
+          <i data-lucide="check"></i>
+          <span>Create Section</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: GitHub API Settings -->
+  <div class="modal-backdrop" id="modal-github-settings" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="github"></i> GitHub Sync Configuration</h3>
+        <button type="button" class="modal-close" id="btn-close-gh-modal"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="form-group">
+        <label for="gh-repo">Repository (Owner/Repo)</label>
+        <input type="text" id="gh-repo" value="Ba-se-l/my-portfolio" placeholder="e.g. Ba-se-l/my-portfolio" />
+      </div>
+
+      <div class="form-group">
+        <label for="gh-branch">Target Branch</label>
+        <select id="gh-branch">
+          <option value="dev">dev (Development & Testing Branch)</option>
+          <option value="main">main (Production Live Site)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="gh-token">GitHub Personal Access Token (PAT)</label>
+        <input type="password" id="gh-token" placeholder="ghp_... or github_pat_..." autocomplete="off" />
+        <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+          Needs <code>Contents: Read & Write</code> permission. Token is saved only in your browser's local storage.
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="gh-commit-msg">Commit Message</label>
+        <input type="text" id="gh-commit-msg" value="Update portfolio-data.json via Portfolio Studio CMS" />
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-gh-settings">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-save-gh-settings">
+          <i data-lucide="save"></i>
+          <span>Save Settings</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden File Input for JSON Import -->
+  <input type="file" id="file-import-input" accept=".json,application/json" style="display: none;" />
+
+  <!-- Toast Notification -->
+  <div id="studio-toast" hidden>
+    <i data-lucide="info" id="toast-icon"></i>
+    <span id="toast-message">Notification message</span>
+  </div>
+
+  <!-- Main Studio Logic Script -->
+  <script src="admin.js"></script>
+</body>
+</html>
