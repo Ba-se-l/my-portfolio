@@ -1,6 +1,6 @@
 {
   "meta": {
-    "lastUpdated": "2026-11-07",
+    "lastUpdated": "2026-11-08",
     "version": "2.0.0",
     "system": "Antigravity Dynamic Portfolio Engine"
   },
@@ -12,7 +12,7 @@
     "statusBadge": "Available for Projects & Roles",
     "avatarUrl": "static/public/my-image.jfif",
     "cvUrl": "static/public/cv.pdf",
-    "shortBio": "Architecting high-performance asynchronous FastAPI backends, resilient SQLAlchemy databases, and reliable multi-agent AI systems governed by strict schemas.",
+    "shortBio": "I am working on becoming a professional Python developer, designing high-performance asynchronous backends for FastAPI, flexible SQLAlchemy databases, and reliable multi-agent AI systems that adhere to strict protocols.",
     "primaryActions": [
       {
         "id": "act-cv",
@@ -85,14 +85,14 @@
       "navTitle": "About & CV",
       "heading": "About & Professional Vision",
       "layoutType": "RichTextAndCV",
-      "leadParagraph": "I am a <strong>Python Backend & AI Developer</strong> currently based in <strong>Accra, Ghana</strong>. My engineering methodology is grounded in deep logical problem-solving, clean architectural modularity, and crafting AI applications that deliver tangible, positive human impact.",
+      "leadParagraph": "I’m a <strong>Python Backend & AI Developer</strong> based in Accra, Ghana. I genuinely love untangling complex problems and building clean, modular systems that make a real, positive impact on people's lives.\n",
       "paragraphs": [
-        "Rather than treating backend development as superficial glue code, I specialize in engineering resilient server infrastructures using <strong>FastAPI</strong>, <strong>SQLAlchemy 2.0 ORM</strong>, and <strong>Asyncio</strong>. In artificial intelligence, I design multi-agent chains with <strong>Google ADK</strong> and enforce strict schema boundary validation using <strong>Pydantic V2</strong> and Enums to completely eliminate hallucinations."
+        "Rather than just writing basic glue code, I focus on engineering resilient backend infrastructure using <strong>FastAPI</strong>,<strong> SQLAlchemy 2.0</strong>, and <strong>Asyncio</strong>. On the <strong>AI</strong> side, I build multi-agent workflows with <strong>Google ADK</strong>, using strict <strong>Pydantic V2</strong> schemas and <strong>Enums</strong> to keep things reliable and completely hallucination-free."
       ],
       "bilingual": {
         "arabic": {
           "title": "Arabic (العربية)",
-          "desc": "Native Language — لغة أم، تواصل فوري وصياغة دقيقة."
+          "desc": "Native Language — اللغة الأُم"
         },
         "english": {
           "title": "English (Technical B1)",
