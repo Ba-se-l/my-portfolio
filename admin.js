@@ -28,7 +28,7 @@ class StudioCMS {
     const savedGh = localStorage.getItem("portfolio_studio_gh_config");
     this.ghConfig = savedGh ? JSON.parse(savedGh) : {
       repo: "Ba-se-l/my-portfolio",
-      branch: "dev",
+      branch: "main",
       token: "",
       commitMsg: "Update portfolio-data.json via Portfolio Studio CMS"
     };

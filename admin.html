@@ -194,8 +194,8 @@ async def sync_portfolio_state(payload: PortfolioSchema):
       <div class="form-group">
         <label for="gh-branch">Target Branch</label>
         <select id="gh-branch">
+          <option value="main" selected>main (Production Live Site)</option>
           <option value="dev">dev (Development & Testing Branch)</option>
-          <option value="main">main (Production Live Site)</option>
         </select>
       </div>
 
