@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow, noarchive" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com http://127.0.0.1:8000 http://localhost:8000 http://127.0.0.1:8130 http://localhost:8130 https://*.workers.dev;" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com https://unpkg.com http://127.0.0.1:8000 http://localhost:8000 http://127.0.0.1:8130 http://localhost:8130 https://*.workers.dev;" />
   <title>Basel Skayker | Visual CMS Studio (FastAPI Gateway Protected)</title>
   <meta name="description" content="Zero-Trust Protected Visual Content Management Studio for Basel Skayker Developer Portfolio" />
 
@@ -37,7 +37,7 @@ async def sync_portfolio_state(payload: PortfolioSchema, auth: ZeroTrustVault = 
     <div class="gate-card" id="gate-card">
       <div class="gate-shield-header">
         <div class="gate-shield-icon">
-          <i data-lucide="shield-lock"></i>
+          <i data-lucide="shield-check"></i>
         </div>
         <span class="gate-encryption-badge">FastAPI &bull; Zero-Trust Server Gate</span>
       </div>
