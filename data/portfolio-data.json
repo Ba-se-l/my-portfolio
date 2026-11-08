@@ -1,8 +1,14 @@
 {
   "meta": {
     "lastUpdated": "2026-11-08",
-    "version": "2.0.0",
-    "system": "Antigravity Dynamic Portfolio Engine"
+    "version": "2.1.0",
+    "system": "Antigravity Dynamic Portfolio Engine",
+    "security": {
+      "algorithm": "PBKDF2-HMAC-SHA256",
+      "iterations": 100000,
+      "salt": "8f4e2a9c1b7d6e3f5a0c9b8e7d6c5b4a",
+      "verifierHash": "4509052f226d38b0e3a833574c1587a82503f559616cdd09dedc95478eb0ad51"
+    }
   },
   "profile": {
     "fullName": "Basel Skayker",

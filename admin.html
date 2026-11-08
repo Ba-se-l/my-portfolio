@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Basel Skayker | Visual CMS Studio</title>
-  <meta name="description" content="Visual Content Management Studio for Basel Skayker Developer Portfolio" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com;" />
+  <title>Basel Skayker | Visual CMS Studio (Protected)</title>
+  <meta name="description" content="Zero-Trust Protected Visual Content Management Studio for Basel Skayker Developer Portfolio" />
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,16 +23,74 @@
 
   <!-- Layer 0: Code Background -->
   <div id="code-backdrop" aria-hidden="true">
-    <pre><code>from fastapi import APIRouter, Depends, status
+    <pre><code>from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-# Basel Skayker Dynamic Content Studio
-# Git-Backed Hybrid Visual CMS
+# Basel Skayker Dynamic Content Studio — Zero-Trust Security Gate
+# Protected by PBKDF2-HMAC-SHA256 (100,000 iterations) & AES-256-GCM Token Vault
 @router.put("/data/portfolio-data.json")
-async def sync_portfolio_state(payload: PortfolioSchema):
-    return {"status": "synced", "version": "2.0.0"}</code></pre>
+async def sync_portfolio_state(payload: PortfolioSchema, auth: ZeroTrustVault = Depends(verify_cryptographic_gate)):
+    return {"status": "synced", "encryption": "AES-256-GCM", "version": "2.1.0"}</code></pre>
   </div>
 
-  <div class="studio-wrapper">
+  <!-- Layer 1: Zero-Trust Cryptographic Security Gate (Active before CMS mounts) -->
+  <div id="security-gate" class="security-gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+    <div class="gate-card" id="gate-card">
+      <div class="gate-shield-header">
+        <div class="gate-shield-icon">
+          <i data-lucide="shield-lock"></i>
+        </div>
+        <span class="gate-encryption-badge">PBKDF2-SHA256 &bull; AES-256-GCM</span>
+      </div>
+
+      <h1 class="gate-title" id="gate-title">Portfolio Studio Access</h1>
+      <p class="gate-subtitle">
+        Restricted administrative workspace for <strong>Basel Skayker</strong>. Enter your cryptographic master passphrase to decrypt the studio vault and mount the editor.
+      </p>
+
+      <form id="security-gate-form" class="gate-form" autocomplete="off">
+        <div class="form-group">
+          <label for="gate-password-input">
+            <span>Master Passphrase</span>
+            <span id="gate-attempts-badge" class="gate-attempts-info">Zero-Trust Gate</span>
+          </label>
+          <div class="gate-input-wrapper">
+            <input
+              type="password"
+              id="gate-password-input"
+              placeholder="Enter studio master passphrase..."
+              required
+              autocomplete="current-password"
+              autofocus
+            />
+            <button type="button" id="btn-toggle-gate-pw" class="gate-pw-toggle" title="Show / Hide Passphrase" aria-label="Toggle passphrase visibility">
+              <i data-lucide="eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="gate-error-box" class="gate-error-box" hidden>
+          <i data-lucide="shield-alert"></i>
+          <span id="gate-error-text">Invalid master passphrase. Access denied.</span>
+        </div>
+
+        <button type="submit" id="btn-unlock-studio" class="btn btn-primary gate-submit-btn">
+          <i data-lucide="unlock"></i>
+          <span id="btn-unlock-text">Authenticate &amp; Mount Studio</span>
+        </button>
+      </form>
+
+      <div class="gate-footer">
+        <a href="index.html" class="gate-back-link">
+          <i data-lucide="arrow-left"></i>
+          <span>Return to Public Portfolio</span>
+        </a>
+        <span class="gate-security-note">100k PBKDF2 Rounds</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 2: Studio Application Workspace (Unmounted & Hidden until Authenticated) -->
+  <div class="studio-wrapper" id="studio-app" hidden>
 
     <!-- Top Sticky Header Bar -->
     <header class="studio-header">
@@ -40,7 +100,7 @@ async def sync_portfolio_state(payload: PortfolioSchema):
             <i data-lucide="layout-dashboard"></i>
             <span>Portfolio Studio</span>
           </div>
-          <span class="studio-badge">Dynamic CMS v2.0</span>
+          <span class="studio-badge">AES-256 Protected</span>
           <div class="sync-status" id="sync-status">
             <span class="sync-dot"></span>
             <span id="sync-status-text">All Changes Synced</span>
@@ -68,14 +128,24 @@ async def sync_portfolio_state(payload: PortfolioSchema):
             <span>Import</span>
           </button>
 
-          <button type="button" id="btn-github-settings" class="btn btn-secondary btn-sm" title="Configure GitHub API Token">
+          <button type="button" id="btn-github-settings" class="btn btn-secondary btn-sm" title="Configure Encrypted GitHub API Token">
             <i data-lucide="settings"></i>
             <span>GitHub Sync</span>
+          </button>
+
+          <button type="button" id="btn-security-settings" class="btn btn-secondary btn-sm" title="Change Master Passphrase & Security Settings">
+            <i data-lucide="shield-check"></i>
+            <span>Security</span>
           </button>
 
           <button type="button" id="btn-publish-github" class="btn btn-primary btn-sm" title="Commit and push changes to GitHub repository">
             <i data-lucide="git-pull-request"></i>
             <span>Publish to GitHub</span>
+          </button>
+
+          <button type="button" id="btn-lock-studio" class="btn btn-danger btn-sm" title="Immediately lock studio and clear session key">
+            <i data-lucide="lock"></i>
+            <span>Lock Studio</span>
           </button>
         </div>
       </div>
@@ -92,7 +162,7 @@ async def sync_portfolio_state(payload: PortfolioSchema):
           <button type="button" class="nav-item-btn active" id="nav-btn-profile" data-tab="profile">
             <div class="nav-item-left">
               <i data-lucide="user-check"></i>
-              <span>Profile & Identity</span>
+              <span>Profile &amp; Identity</span>
             </div>
           </button>
         </div>
@@ -104,7 +174,7 @@ async def sync_portfolio_state(payload: PortfolioSchema):
           </div>
 
           <div class="nav-sections-list" id="sections-nav-list">
-            <!-- Dynamically populated sections list with reorder and toggle controls -->
+            <!-- Dynamically populated sections list ONLY after authentication -->
           </div>
 
           <button type="button" id="btn-add-section" class="btn btn-outline btn-sm" style="width: 100%; margin-top: 0.75rem;">
@@ -118,7 +188,7 @@ async def sync_portfolio_state(payload: PortfolioSchema):
           <button type="button" class="nav-item-btn" id="nav-btn-contact" data-tab="contact">
             <div class="nav-item-left">
               <i data-lucide="message-square"></i>
-              <span>Contact & Channels</span>
+              <span>Contact &amp; Channels</span>
             </div>
           </button>
         </div>
@@ -127,7 +197,7 @@ async def sync_portfolio_state(payload: PortfolioSchema):
 
       <!-- Right Active Canvas -->
       <section class="studio-canvas" id="canvas-container">
-        <!-- Rendered dynamically by admin.js according to active tab or section -->
+        <!-- Rendered dynamically by admin.js ONLY after authentication -->
       </section>
 
     </main>
@@ -161,10 +231,10 @@ async def sync_portfolio_state(payload: PortfolioSchema):
         <label for="new-sec-layout">Layout Style Type</label>
         <select id="new-sec-layout">
           <option value="CustomCardsGrid">Custom Cards Grid (Flexible cards for certifications, posts, repos)</option>
-          <option value="ProjectsAndTimeline">Projects & Timeline (Hover-dimmed cards with links & tags)</option>
-          <option value="SkillCategoriesGrid">Skill Categories Grid (Categorized badges & domain pills)</option>
-          <option value="ServicesGrid">Services Grid (Deliverables & guarantees)</option>
-          <option value="RichTextAndCV">Rich Text & Highlights (Lead text, paragraphs, cards)</option>
+          <option value="ProjectsAndTimeline">Projects &amp; Timeline (Hover-dimmed cards with links &amp; tags)</option>
+          <option value="SkillCategoriesGrid">Skill Categories Grid (Categorized badges &amp; domain pills)</option>
+          <option value="ServicesGrid">Services Grid (Deliverables &amp; guarantees)</option>
+          <option value="RichTextAndCV">Rich Text &amp; Highlights (Lead text, paragraphs, cards)</option>
         </select>
       </div>
 
@@ -178,11 +248,11 @@ async def sync_portfolio_state(payload: PortfolioSchema):
     </div>
   </div>
 
-  <!-- Modal: GitHub API Settings -->
+  <!-- Modal: GitHub API Settings (AES-256-GCM Encrypted Vault) -->
   <div class="modal-backdrop" id="modal-github-settings" hidden>
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title"><i data-lucide="github"></i> GitHub Sync Configuration</h3>
+        <h3 class="modal-title"><i data-lucide="github"></i> Encrypted GitHub Sync Vault</h3>
         <button type="button" class="modal-close" id="btn-close-gh-modal"><i data-lucide="x"></i></button>
       </div>
 
@@ -195,15 +265,18 @@ async def sync_portfolio_state(payload: PortfolioSchema):
         <label for="gh-branch">Target Branch</label>
         <select id="gh-branch">
           <option value="main" selected>main (Production Live Site)</option>
-          <option value="dev">dev (Development & Testing Branch)</option>
+          <option value="dev">dev (Development &amp; Testing Branch)</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="gh-token">GitHub Personal Access Token (PAT)</label>
+        <label for="gh-token">
+          <span>GitHub Personal Access Token (PAT)</span>
+          <span class="studio-badge" style="font-size: 0.65rem;">AES-256-GCM Encrypted</span>
+        </label>
         <input type="password" id="gh-token" placeholder="ghp_... or github_pat_..." autocomplete="off" />
         <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-          Needs <code>Contents: Read & Write</code> permission. Token is saved only in your browser's local storage.
+          Encrypted with <code>AES-256-GCM</code> using your Master Passphrase key before saving to local storage. Never stored in plaintext.
         </span>
       </div>
 
@@ -215,8 +288,49 @@ async def sync_portfolio_state(payload: PortfolioSchema):
       <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
         <button type="button" class="btn btn-secondary" id="btn-cancel-gh-settings">Cancel</button>
         <button type="button" class="btn btn-primary" id="btn-save-gh-settings">
-          <i data-lucide="save"></i>
-          <span>Save Settings</span>
+          <i data-lucide="lock"></i>
+          <span>Encrypt &amp; Save Vault</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Security & Master Passphrase Settings -->
+  <div class="modal-backdrop" id="modal-security-settings" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"><i data-lucide="shield-check"></i> Security &amp; Master Passphrase</h3>
+        <button type="button" class="modal-close" id="btn-close-sec-modal"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="security-info-banner">
+        <i data-lucide="key-round"></i>
+        <div>
+          <strong>PBKDF2-HMAC-SHA256 (100,000 Iterations)</strong>
+          <p>Changing your passphrase generates a new random cryptographic salt, re-encrypts your GitHub Token Vault with a new 256-bit AES-GCM key, and updates the verifier hash in <code>portfolio-data.json</code> (remember to click <strong>Save to Disk</strong> or <strong>Publish to GitHub</strong> afterwards to apply across all devices).</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="sec-current-pw">Current Master Passphrase</label>
+        <input type="password" id="sec-current-pw" placeholder="Enter current passphrase..." autocomplete="off" />
+      </div>
+
+      <div class="form-group">
+        <label for="sec-new-pw">New Master Passphrase (Min. 8 characters)</label>
+        <input type="password" id="sec-new-pw" placeholder="Enter strong new passphrase..." autocomplete="new-password" />
+      </div>
+
+      <div class="form-group">
+        <label for="sec-confirm-pw">Confirm New Master Passphrase</label>
+        <input type="password" id="sec-confirm-pw" placeholder="Re-enter new passphrase..." autocomplete="new-password" />
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-sec-settings">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-save-sec-settings">
+          <i data-lucide="key"></i>
+          <span>Update Passphrase &amp; Re-Key Vault</span>
         </button>
       </div>
     </div>
@@ -235,4 +349,3 @@ async def sync_portfolio_state(payload: PortfolioSchema):
   <script src="admin.js"></script>
 </body>
 </html>
-
