@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow, noarchive" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com;" />
-  <title>Basel Skayker | Visual CMS Studio (Protected)</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.github.com http://127.0.0.1:8000 http://localhost:8000 http://127.0.0.1:8130 http://localhost:8130 https://*.workers.dev;" />
+  <title>Basel Skayker | Visual CMS Studio (FastAPI Gateway Protected)</title>
   <meta name="description" content="Zero-Trust Protected Visual Content Management Studio for Basel Skayker Developer Portfolio" />
 
   <!-- Google Fonts -->
@@ -16,8 +16,8 @@
   <!-- Stylesheet -->
   <link rel="stylesheet" href="admin.css" />
 
-  <!-- Lucide Icons Vanilla JS CDN -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Lucide Icons Vanilla JS (Pinned release with SRI) -->
+  <script src="https://unpkg.com/lucide@0.469.0" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -39,12 +39,12 @@ async def sync_portfolio_state(payload: PortfolioSchema, auth: ZeroTrustVault = 
         <div class="gate-shield-icon">
           <i data-lucide="shield-lock"></i>
         </div>
-        <span class="gate-encryption-badge">PBKDF2-SHA256 &bull; AES-256-GCM</span>
+        <span class="gate-encryption-badge">FastAPI &bull; Zero-Trust Server Gate</span>
       </div>
 
       <h1 class="gate-title" id="gate-title">Portfolio Studio Access</h1>
       <p class="gate-subtitle">
-        Restricted administrative workspace for <strong>Basel Skayker</strong>. Enter your cryptographic master passphrase to decrypt the studio vault and mount the editor.
+        Restricted administrative workspace for <strong>Basel Skayker</strong>. Enter your cryptographic master passphrase to authenticate with the FastAPI Security Gateway and mount the editor.
       </p>
 
       <form id="security-gate-form" class="gate-form" autocomplete="off">
@@ -128,17 +128,12 @@ async def sync_portfolio_state(payload: PortfolioSchema, auth: ZeroTrustVault = 
             <span>Import</span>
           </button>
 
-          <button type="button" id="btn-github-settings" class="btn btn-secondary btn-sm" title="Configure Encrypted GitHub API Token">
-            <i data-lucide="settings"></i>
-            <span>GitHub Sync</span>
+          <button type="button" id="btn-gateway-settings" class="btn btn-secondary btn-sm" title="Configure FastAPI Backend Gateway URL">
+            <i data-lucide="server"></i>
+            <span>Gateway API</span>
           </button>
 
-          <button type="button" id="btn-security-settings" class="btn btn-secondary btn-sm" title="Change Master Passphrase & Security Settings">
-            <i data-lucide="shield-check"></i>
-            <span>Security</span>
-          </button>
-
-          <button type="button" id="btn-publish-github" class="btn btn-primary btn-sm" title="Commit and push changes to GitHub repository">
+          <button type="button" id="btn-publish-github" class="btn btn-primary btn-sm" title="Commit and push changes via FastAPI Security Gateway">
             <i data-lucide="git-pull-request"></i>
             <span>Publish to GitHub</span>
           </button>
@@ -248,90 +243,43 @@ async def sync_portfolio_state(payload: PortfolioSchema, auth: ZeroTrustVault = 
     </div>
   </div>
 
-  <!-- Modal: GitHub API Settings (AES-256-GCM Encrypted Vault) -->
-  <div class="modal-backdrop" id="modal-github-settings" hidden>
+  <!-- Modal: FastAPI Backend Gateway Settings -->
+  <div class="modal-backdrop" id="modal-gateway-settings" hidden>
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title"><i data-lucide="github"></i> Encrypted GitHub Sync Vault</h3>
-        <button type="button" class="modal-close" id="btn-close-gh-modal"><i data-lucide="x"></i></button>
-      </div>
-
-      <div class="form-group">
-        <label for="gh-repo">Repository (Owner/Repo)</label>
-        <input type="text" id="gh-repo" value="Ba-se-l/my-portfolio" placeholder="e.g. Ba-se-l/my-portfolio" />
-      </div>
-
-      <div class="form-group">
-        <label for="gh-branch">Target Branch</label>
-        <select id="gh-branch">
-          <option value="main" selected>main (Production Live Site)</option>
-          <option value="dev">dev (Development &amp; Testing Branch)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="gh-token">
-          <span>GitHub Personal Access Token (PAT)</span>
-          <span class="studio-badge" style="font-size: 0.65rem;">AES-256-GCM Encrypted</span>
-        </label>
-        <input type="password" id="gh-token" placeholder="ghp_... or github_pat_..." autocomplete="off" />
-        <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-          Encrypted with <code>AES-256-GCM</code> using your Master Passphrase key before saving to local storage. Never stored in plaintext.
-        </span>
-      </div>
-
-      <div class="form-group">
-        <label for="gh-commit-msg">Commit Message</label>
-        <input type="text" id="gh-commit-msg" value="Update portfolio-data.json via Portfolio Studio CMS" />
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
-        <button type="button" class="btn btn-secondary" id="btn-cancel-gh-settings">Cancel</button>
-        <button type="button" class="btn btn-primary" id="btn-save-gh-settings">
-          <i data-lucide="lock"></i>
-          <span>Encrypt &amp; Save Vault</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: Security & Master Passphrase Settings -->
-  <div class="modal-backdrop" id="modal-security-settings" hidden>
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title"><i data-lucide="shield-check"></i> Security &amp; Master Passphrase</h3>
-        <button type="button" class="modal-close" id="btn-close-sec-modal"><i data-lucide="x"></i></button>
+        <h3 class="modal-title"><i data-lucide="server"></i> FastAPI Gateway Settings</h3>
+        <button type="button" class="modal-close" id="btn-close-gateway-modal"><i data-lucide="x"></i></button>
       </div>
 
       <div class="security-info-banner">
-        <i data-lucide="key-round"></i>
+        <i data-lucide="shield-check"></i>
         <div>
-          <strong>PBKDF2-HMAC-SHA256 (100,000 Iterations)</strong>
-          <p>Changing your passphrase generates a new random cryptographic salt, re-encrypts your GitHub Token Vault with a new 256-bit AES-GCM key, and updates the verifier hash in <code>portfolio-data.json</code> (remember to click <strong>Save to Disk</strong> or <strong>Publish to GitHub</strong> afterwards to apply across all devices).</p>
+          <strong>Zero-Trust Server-Side Security</strong>
+          <p>All authentication, brute-force rate-limiting, and GitHub synchronization are executed on your FastAPI backend. No secrets or GitHub tokens are stored in the browser.</p>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="sec-current-pw">Current Master Passphrase</label>
-        <input type="password" id="sec-current-pw" placeholder="Enter current passphrase..." autocomplete="off" />
+        <label for="gateway-url">Backend Gateway Base URL</label>
+        <input type="url" id="gateway-url" value="https://portfolio-admin-backend.baselskaiker21.workers.dev" placeholder="https://portfolio-admin-backend.baselskaiker21.workers.dev" required />
+        <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+          Connected to Cloudflare Python Workers 24/7 Edge Gateway (or configure localhost for offline testing).
+        </span>
       </div>
 
-      <div class="form-group">
-        <label for="sec-new-pw">New Master Passphrase (Min. 8 characters)</label>
-        <input type="password" id="sec-new-pw" placeholder="Enter strong new passphrase..." autocomplete="new-password" />
-      </div>
-
-      <div class="form-group">
-        <label for="sec-confirm-pw">Confirm New Master Passphrase</label>
-        <input type="password" id="sec-confirm-pw" placeholder="Re-enter new passphrase..." autocomplete="new-password" />
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
-        <button type="button" class="btn btn-secondary" id="btn-cancel-sec-settings">Cancel</button>
-        <button type="button" class="btn btn-primary" id="btn-save-sec-settings">
-          <i data-lucide="key"></i>
-          <span>Update Passphrase &amp; Re-Key Vault</span>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+        <button type="button" class="btn btn-outline btn-sm" id="btn-test-gateway-conn">
+          <i data-lucide="activity"></i>
+          <span>Test Health Connection</span>
         </button>
+
+        <div style="display: flex; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-gateway-settings">Cancel</button>
+          <button type="button" class="btn btn-primary" id="btn-save-gateway-settings">
+            <i data-lucide="save"></i>
+            <span>Save Gateway URL</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

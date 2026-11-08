@@ -266,6 +266,48 @@ const FALLBACK_PORTFOLIO_DATA = {
 };
 
 /**
+ * HTML Context Escaping and Sanitization Helpers
+ */
+function escapeHtml(str) {
+  if (typeof str !== "string") return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function sanitizeUrl(url) {
+  if (typeof url !== "string") return "#";
+  const trimmed = url.trim();
+  if (trimmed.startsWith("#") || trimmed.startsWith("static/public/") || trimmed.startsWith("./static/public/")) {
+    if (trimmed.includes("..") || trimmed.includes("\\")) return "#";
+    return trimmed;
+  }
+  try {
+    const parsed = new URL(trimmed, window.location.origin);
+    if (["https:", "mailto:", "tel:"].includes(parsed.protocol)) {
+      return trimmed;
+    }
+  } catch (e) {}
+  return "#";
+}
+
+function sanitizeRichHtml(str) {
+  if (typeof str !== "string") return "";
+  const escaped = escapeHtml(str);
+  return escaped
+    .replace(/&lt;strong&gt;/g, "<strong>")
+    .replace(/&lt;\/strong&gt;/g, "</strong>")
+    .replace(/&lt;em&gt;/g, "<em>")
+    .replace(/&lt;\/em&gt;/g, "</em>")
+    .replace(/&lt;code&gt;/g, "<code>")
+    .replace(/&lt;\/code&gt;/g, "</code>")
+    .replace(/&bull;/g, "&bull;");
+}
+
+/**
  * Main Portfolio Renderer Engine
  */
 class PortfolioRenderer {

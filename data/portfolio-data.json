@@ -1,14 +1,8 @@
 {
   "meta": {
     "lastUpdated": "2026-11-08",
-    "version": "2.1.0",
-    "system": "Antigravity Dynamic Portfolio Engine",
-    "security": {
-      "algorithm": "PBKDF2-HMAC-SHA256",
-      "iterations": 100000,
-      "salt": "8f4e2a9c1b7d6e3f5a0c9b8e7d6c5b4a",
-      "verifierHash": "4509052f226d38b0e3a833574c1587a82503f559616cdd09dedc95478eb0ad51"
-    }
+    "version": "2.2.0",
+    "system": "Antigravity Dynamic Portfolio Engine"
   },
   "profile": {
     "fullName": "Basel Skayker",
@@ -91,7 +85,7 @@
       "navTitle": "About & CV",
       "heading": "About & Professional Vision",
       "layoutType": "RichTextAndCV",
-      "leadParagraph": "I’m a <strong>Python Backend & AI Developer</strong> based in Accra, Ghana. I genuinely love untangling complex problems and building clean, modular systems that make a real, positive impact on people's lives.\n",
+      "leadParagraph": "I’m a <strong>Python Backend & AI Developer</strong> based in Accra, Ghana. I genuinely love untangling complex problems and building clean, modular systems that make a real, positive impact on people's lives.",
       "paragraphs": [
         "Rather than just writing basic glue code, I focus on engineering resilient backend infrastructure using <strong>FastAPI</strong>,<strong> SQLAlchemy 2.0</strong>, and <strong>Asyncio</strong>. On the <strong>AI</strong> side, I build multi-agent workflows with <strong>Google ADK</strong>, using strict <strong>Pydantic V2</strong> schemas and <strong>Enums</strong> to keep things reliable and completely hallucination-free."
       ],
@@ -193,6 +187,7 @@
           "icon": "zap",
           "description": "Design and implementation of non-blocking backend microservices with automatic OpenAPI interactive documentation, bulletproof authentication, and granular RBAC authorization.",
           "guarantee": "Sub-100ms response latencies, zero thread starvation, and comprehensive audit logging.",
+          "deliverables": [],
           "tags": [
             "FastAPI",
             "Asyncio",
@@ -207,6 +202,7 @@
           "icon": "bot",
           "description": "Architecting multi-agent generative loops via Google ADK and leading LLMs (Gemini, Claude), constrained by strict behavioral constitutions and Pydantic validation barriers.",
           "guarantee": "Zero uncontrolled hallucinations, schema-compliant outputs, and graceful fallback handling.",
+          "deliverables": [],
           "tags": [
             "Google ADK",
             "Pydantic V2",
@@ -220,6 +216,7 @@
           "icon": "layers",
           "description": "Establishing normalized relational schemas, non-blocking connection lifecycles, and generic base repository abstractions for PostgreSQL and SQLite.",
           "guarantee": "Zero N+1 query leaks, clean migration history via Alembic, and scalable domain isolation.",
+          "deliverables": [],
           "tags": [
             "SQLAlchemy 2.0",
             "PostgreSQL",
@@ -233,6 +230,7 @@
           "icon": "graduation-cap",
           "description": "Structured engineering mentoring for developers and teams, progressing from algorithmic fundamentals and memory models to advanced asynchronous architectures.",
           "guarantee": "Transforming theoretical understanding into production-ready logical and modular code.",
+          "deliverables": [],
           "tags": [
             "Python Mentorship",
             "Clean Architecture",
@@ -326,7 +324,8 @@
         "value": "+233 59 212 1895",
         "url": "https://wa.me/233592121895?text=Hello%20Basel%2C%20I%20visited%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project.",
         "icon": "message-circle",
-        "badge": "Instant Chat"
+        "badge": "Instant Chat",
+        "isCopy": null
       },
       {
         "id": "ch-wa-sy",
@@ -334,7 +333,8 @@
         "value": "+963 967 247 787",
         "url": "https://wa.me/963967247787?text=Hello%20Basel%2C%20I%20visited%20your%20portfolio%20and%20would%20like%20to%20connect.",
         "icon": "phone",
-        "badge": "Direct Line"
+        "badge": "Direct Line",
+        "isCopy": null
       },
       {
         "id": "ch-email",
@@ -351,7 +351,8 @@
         "value": "github.com/Ba-se-l",
         "url": "https://github.com/Ba-se-l",
         "icon": "github",
-        "badge": "Source Code"
+        "badge": "Source Code",
+        "isCopy": null
       }
     ],
     "form": {

@@ -1,490 +1,272 @@
 /**
  * ==========================================================================
- * BASEL SKAYKER — PORTFOLIO STUDIO CMS RUNTIME ENGINE (ZERO-TRUST EDITION)
+ * BASEL SKAYKER — PORTFOLIO STUDIO CMS RUNTIME ENGINE (FASTAPI GATEWAY CLIENT)
  * Pure Vanilla JavaScript — High Performance Visual Content Studio
  * 
- * Security & Features:
- * 1. Zero-Trust Cryptographic Gate: PBKDF2-HMAC-SHA256 (100,000 rounds)
- * 2. AES-256-GCM Encrypted GitHub Token Vault (Zero Plaintext Credentials)
- * 3. Unmounted DOM Architecture + Anti-Tamper MutationObserver
- * 4. Brute-Force Rate Limiter (5 attempts -> 60s exponential lockout)
- * 5. Reactive State Management + Triple Save & Sync Engine
+ * Features:
+ * 1. Zero-Trust Server Authentication (FastAPI Security Gateway)
+ * 2. In-Memory Ephemeral Session JWT & CSRF Protection (Zero Plaintext Tokens)
+ * 3. Atomic Server-Side GitHub Synchronization via Optimistic SHA Concurrency
+ * 4. Pydantic V2 Pre-Publish Validation & XSS Sanitization Shield
+ * 5. Server-Side Sliding-Window Brute-Force Protection
  * ==========================================================================
  */
 
 "use strict";
 
-const DEFAULT_SECURITY_META = Object.freeze({
-  algorithm: "PBKDF2-HMAC-SHA256",
-  iterations: 100000,
-  salt: "8f4e2a9c1b7d6e3f5a0c9b8e7d6c5b4a",
-  verifierHash: "4509052f226d38b0e3a833574c1587a82503f559616cdd09dedc95478eb0ad51"
-});
-
-const MAX_FAILED_ATTEMPTS = 5;
-const BASE_LOCKOUT_SECONDS = 60;
-const IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+/**
+ * Context Escaping and Sanitization Helpers
+ */
+function escapeHtml(str) {
+  if (typeof str !== "string") return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 /**
  * Cryptographic Security Gate & AES-256-GCM Vault Controller
  */
-class SecurityVault {
-  #isAuthenticated = false;
-  #aesKey = null;
-  #studioInstance = null;
+const DEFAULT_GATEWAY_URL = "https://portfolio-admin-backend.baselskaiker21.workers.dev";
+
+/**
+ * Stateless Client for Communication with FastAPI Security Gateway
+ */
+class BackendGatewayClient {
+  #gatewayUrl = DEFAULT_GATEWAY_URL;
+  #accessToken = null;
+  #csrfToken = null;
+  #currentBlobSha = null;
   #idleTimer = null;
-  #lockoutInterval = null;
-  #tamperObserver = null;
+  #studioInstance = null;
 
   constructor() {
-    this.securityMeta = { ...DEFAULT_SECURITY_META };
+    const savedUrl = localStorage.getItem("portfolio_studio_gateway_url");
+    if (savedUrl) {
+      const normalized = savedUrl.replace(/\/+$/, "");
+      const isGithubPages = window.location.hostname.endsWith("github.io");
+      const isLocalLoopback = normalized.includes("127.0.0.1") || normalized.includes("localhost");
+      if (isGithubPages && isLocalLoopback) {
+        this.#gatewayUrl = DEFAULT_GATEWAY_URL;
+        localStorage.setItem("portfolio_studio_gateway_url", DEFAULT_GATEWAY_URL);
+      } else {
+        this.#gatewayUrl = normalized;
+      }
+    }
+  }
+
+  get gatewayUrl() {
+    return this.#gatewayUrl;
+  }
+
+  setGatewayUrl(url) {
+    if (!url) return;
+    this.#gatewayUrl = url.trim().replace(/\/+$/, "");
+    localStorage.setItem("portfolio_studio_gateway_url", this.#gatewayUrl);
   }
 
   get isAuthenticated() {
-    return this.#isAuthenticated;
+    return Boolean(this.#accessToken);
   }
 
-  /**
-   * Convert hex string to Uint8Array
-   */
-  static hexToBytes(hex) {
-    const clean = (hex || "").replace(/[^0-9a-fA-F]/g, "");
-    const bytes = new Uint8Array(clean.length / 2);
-    for (let i = 0; i < bytes.length; i++) {
-      bytes[i] = parseInt(clean.substr(i * 2, 2), 16);
-    }
-    return bytes;
+  get studioInstance() {
+    return this.#studioInstance;
   }
 
-  /**
-   * Convert Uint8Array / ArrayBuffer to hex string
-   */
-  static bytesToHex(buffer) {
-    return Array.from(new Uint8Array(buffer))
-      .map(b => b.toString(16).padStart(2, "0"))
-      .join("");
+  get currentBlobSha() {
+    return this.#currentBlobSha;
   }
 
-  /**
-   * Constant-time string comparison to prevent timing side-channel attacks
-   */
-  static constantTimeEqual(a, b) {
-    if (typeof a !== "string" || typeof b !== "string" || a.length !== b.length) {
-      return false;
-    }
-    let diff = 0;
-    for (let i = 0; i < a.length; i++) {
-      diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-    }
-    return diff === 0;
+  setCurrentBlobSha(sha) {
+    this.#currentBlobSha = sha;
   }
 
-  /**
-   * Derive 512 bits via PBKDF2-HMAC-SHA256:
-   * - First 256 bits -> verifierHash (hex)
-   * - Second 256 bits -> AES-256-GCM CryptoKey for token vault encryption
-   */
-  async deriveCryptographicMaterial(passphrase, saltHex, iterations = 100000) {
-    const enc = new TextEncoder();
-    const saltBytes = SecurityVault.hexToBytes(saltHex);
-    const keyMaterial = await window.crypto.subtle.importKey(
-      "raw",
-      enc.encode(passphrase),
-      "PBKDF2",
-      false,
-      ["deriveBits"]
-    );
-
-    const derivedBits = await window.crypto.subtle.deriveBits(
-      {
-        name: "PBKDF2",
-        salt: saltBytes,
-        iterations: Number(iterations) || 100000,
-        hash: "SHA-256"
-      },
-      keyMaterial,
-      512
-    );
-
-    const fullBytes = new Uint8Array(derivedBits);
-    const verifierBytes = fullBytes.slice(0, 32);
-    const aesRawBytes = fullBytes.slice(32, 64);
-
-    const verifierHash = SecurityVault.bytesToHex(verifierBytes);
-    const aesKey = await window.crypto.subtle.importKey(
-      "raw",
-      aesRawBytes,
-      { name: "AES-GCM" },
-      false,
-      ["encrypt", "decrypt"]
-    );
-
-    return { verifierHash, aesKey };
-  }
-
-  /**
-   * Load verifier metadata from local override or portfolio-data.json
-   */
-  async loadSecurityMetadata() {
+  async testConnection() {
     try {
-      const localMeta = localStorage.getItem("portfolio_studio_security_meta");
-      if (localMeta) {
-        const parsed = JSON.parse(localMeta);
-        if (parsed?.salt && parsed?.verifierHash) {
-          this.securityMeta = parsed;
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn("Could not read local security meta override.");
-    }
-
-    try {
-      const res = await fetch("./data/portfolio-data.json", { cache: "no-cache" });
+      const res = await fetch(`${this.#gatewayUrl}/api/health`, {
+        method: "GET",
+        headers: { "Accept": "application/json" }
+      });
       if (res.ok) {
         const json = await res.json();
-        if (json?.meta?.security?.salt && json?.meta?.security?.verifierHash) {
-          this.securityMeta = json.meta.security;
-        }
+        return { ok: true, data: json };
       }
-    } catch (e) {
-      // Uses DEFAULT_SECURITY_META fallback
-    }
-  }
-
-  /**
-   * Read brute-force lockout state
-   */
-  getLockoutState() {
-    try {
-      const raw = localStorage.getItem("portfolio_studio_lockout");
-      if (raw) return JSON.parse(raw);
-    } catch (e) {}
-    return { failedAttempts: 0, lockoutUntil: 0, lockCount: 0 };
-  }
-
-  /**
-   * Save brute-force lockout state
-   */
-  setLockoutState(state) {
-    localStorage.setItem("portfolio_studio_lockout", JSON.stringify(state));
-  }
-
-  /**
-   * Encrypt GitHub configuration object using AES-256-GCM
-   */
-  async encryptGitHubVault(ghConfig) {
-    if (!this.#aesKey) throw new Error("Security vault is locked.");
-    const iv = window.crypto.getRandomValues(new Uint8Array(12));
-    const encoded = new TextEncoder().encode(JSON.stringify(ghConfig));
-    const cipherBuffer = await window.crypto.subtle.encrypt(
-      { name: "AES-GCM", iv },
-      this.#aesKey,
-      encoded
-    );
-
-    const payload = {
-      alg: "AES-256-GCM",
-      iv: SecurityVault.bytesToHex(iv),
-      ciphertext: SecurityVault.bytesToHex(cipherBuffer),
-      updatedAt: new Date().toISOString()
-    };
-
-    localStorage.setItem("portfolio_studio_encrypted_gh", JSON.stringify(payload));
-    // Always purge any legacy plaintext token config
-    localStorage.removeItem("portfolio_studio_gh_config");
-  }
-
-  /**
-   * Decrypt GitHub configuration object using AES-256-GCM
-   */
-  async decryptGitHubVault() {
-    const defaultConfig = {
-      repo: "Ba-se-l/my-portfolio",
-      branch: "main",
-      token: "",
-      commitMsg: "Update portfolio-data.json via Portfolio Studio CMS"
-    };
-
-    if (!this.#aesKey) return defaultConfig;
-
-    // 1. Migrate legacy plaintext config if it exists
-    const legacyPlaintext = localStorage.getItem("portfolio_studio_gh_config");
-    if (legacyPlaintext) {
-      try {
-        const parsedLegacy = JSON.parse(legacyPlaintext);
-        await this.encryptGitHubVault(parsedLegacy);
-        return { ...defaultConfig, ...parsedLegacy };
-      } catch (e) {
-        localStorage.removeItem("portfolio_studio_gh_config");
-      }
-    }
-
-    // 2. Decrypt AES-256-GCM vault
-    const rawVault = localStorage.getItem("portfolio_studio_encrypted_gh");
-    if (!rawVault) return defaultConfig;
-
-    try {
-      const payload = JSON.parse(rawVault);
-      const iv = SecurityVault.hexToBytes(payload.iv);
-      const cipherBytes = SecurityVault.hexToBytes(payload.ciphertext);
-      const plainBuffer = await window.crypto.subtle.decrypt(
-        { name: "AES-GCM", iv },
-        this.#aesKey,
-        cipherBytes
-      );
-      const decoded = new TextDecoder().decode(plainBuffer);
-      return { ...defaultConfig, ...JSON.parse(decoded) };
+      return { ok: false, status: res.status, error: `HTTP ${res.status}` };
     } catch (err) {
-      console.warn("Could not decrypt GitHub vault with current key; returning default config.");
-      return defaultConfig;
+      return { ok: false, error: err.message };
     }
   }
 
-  /**
-   * Update Master Passphrase, re-key AES-256-GCM vault, and update verifier metadata
-   */
-  async changeMasterPassphrase(currentPw, newPw, confirmPw, studioData) {
-    if (!currentPw || !newPw) {
-      throw new Error("Please fill in both current and new passphrases.");
-    }
-    if (newPw.length < 8) {
-      throw new Error("New passphrase must be at least 8 characters long.");
-    }
-    if (newPw !== confirmPw) {
-      throw new Error("New passphrase and confirmation do not match.");
-    }
-
-    // Verify current passphrase first
-    const currentCheck = await this.deriveCryptographicMaterial(
-      currentPw,
-      this.securityMeta.salt,
-      this.securityMeta.iterations
-    );
-
-    if (!SecurityVault.constantTimeEqual(currentCheck.verifierHash, this.securityMeta.verifierHash)) {
-      throw new Error("Current master passphrase is incorrect.");
-    }
-
-    // Generate fresh 16-byte cryptographic salt
-    const newSaltBytes = window.crypto.getRandomValues(new Uint8Array(16));
-    const newSaltHex = SecurityVault.bytesToHex(newSaltBytes);
-    const iterations = 100000;
-
-    const newMaterial = await this.deriveCryptographicMaterial(newPw, newSaltHex, iterations);
-
-    // Update active key & security metadata
-    this.#aesKey = newMaterial.aesKey;
-    this.securityMeta = {
-      algorithm: "PBKDF2-HMAC-SHA256",
-      iterations,
-      salt: newSaltHex,
-      verifierHash: newMaterial.verifierHash
-    };
-
-    localStorage.setItem("portfolio_studio_security_meta", JSON.stringify(this.securityMeta));
-
-    if (studioData) {
-      if (!studioData.meta) studioData.meta = {};
-      studioData.meta.security = { ...this.securityMeta };
-    }
-
-    // Re-encrypt GitHub config with new AES-256-GCM key
-    if (this.#studioInstance?.ghConfig) {
-      await this.encryptGitHubVault(this.#studioInstance.ghConfig);
-    }
-  }
-
-  /**
-   * Anti-Tamper DOM Guard: Prevents DevTools removal of #security-gate or unhiding #studio-app
-   */
-  initAntiTamperGuard() {
-    if (this.#tamperObserver) return;
-
-    const enforceLockDOM = () => {
-      if (this.#isAuthenticated) return;
-
-      const studioApp = document.getElementById("studio-app");
-      const gate = document.getElementById("security-gate");
-      const navList = document.getElementById("sections-nav-list");
-      const canvas = document.getElementById("canvas-container");
-
-      if (studioApp && (!studioApp.hasAttribute("hidden") || studioApp.style.display !== "")) {
-        studioApp.setAttribute("hidden", "true");
-        studioApp.style.display = "";
-      }
-      if (navList && navList.innerHTML !== "") navList.innerHTML = "";
-      if (canvas && canvas.innerHTML !== "") canvas.innerHTML = "";
-
-      if (gate && (gate.hasAttribute("hidden") || gate.style.display === "none" || gate.style.visibility === "hidden")) {
-        gate.removeAttribute("hidden");
-        gate.style.display = "";
-        gate.style.visibility = "";
-      }
-    };
-
-    this.#tamperObserver = new MutationObserver(enforceLockDOM);
-    this.#tamperObserver.observe(document.documentElement, {
-      attributes: true,
-      childList: true,
-      subtree: true
+  async login(password) {
+    const res = await fetch(`${this.#gatewayUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      credentials: "include",
+      body: JSON.stringify({ password })
     });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (res.status === 429) {
+        const retryAfter = res.headers.get("Retry-After") || data.retry_after_seconds || 60;
+        throw new Error(`Too many failed attempts. Gate locked for ${retryAfter} seconds.`);
+      }
+      throw new Error(data.message || `Authentication failed (${res.status})`);
+    }
+
+    this.#accessToken = data.access_token;
+    this.#csrfToken = data.csrf_token;
+    return data;
   }
 
-  /**
-   * Reset 15-minute inactivity auto-lock timer
-   */
+  async fetchCmsState() {
+    const headers = {
+      "Accept": "application/json"
+    };
+    if (this.#accessToken) {
+      headers["Authorization"] = `Bearer ${this.#accessToken}`;
+    }
+
+    const res = await fetch(`${this.#gatewayUrl}/api/v1/cms/state`, {
+      method: "GET",
+      headers,
+      credentials: "include"
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `Failed to fetch CMS state (${res.status})`);
+    }
+
+    const data = await res.json();
+    this.#currentBlobSha = data.current_blob_sha;
+    return data;
+  }
+
+  async publishChanges(portfolioData, commitMessage = "chore(cms): update portfolio content via Admin Studio") {
+    const headers = {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    };
+    if (this.#accessToken) {
+      headers["Authorization"] = `Bearer ${this.#accessToken}`;
+    }
+    if (this.#csrfToken) {
+      headers["X-CSRF-Token"] = this.#csrfToken;
+    }
+
+    const res = await fetch(`${this.#gatewayUrl}/api/v1/cms/publish`, {
+      method: "PUT",
+      headers,
+      credentials: "include",
+      body: JSON.stringify({
+        commit_message: commitMessage,
+        expected_blob_sha: this.#currentBlobSha,
+        portfolio_data: portfolioData
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      if (res.status === 409) {
+        throw new Error("Git SHA conflict: Remote portfolio was modified upstream. Please reload the latest state.");
+      }
+      if (res.status === 422) {
+        const details = (data.detail || []).map(d => `${d.loc?.join(".")}: ${d.msg}`).join("; ");
+        throw new Error(`Data validation failed on server: ${details || data.message || "Invalid format"}`);
+      }
+      throw new Error(data.message || `Publish failed (${res.status})`);
+    }
+
+    this.#currentBlobSha = data.new_blob_sha;
+    return data;
+  }
+
+  async logout() {
+    try {
+      await fetch(`${this.#gatewayUrl}/api/v1/auth/logout`, {
+        method: "POST",
+        credentials: "include"
+      });
+    } catch (e) {}
+
+    this.#accessToken = null;
+    this.#csrfToken = null;
+    this.#currentBlobSha = null;
+
+    if (this.#idleTimer) {
+      clearTimeout(this.#idleTimer);
+      this.#idleTimer = null;
+    }
+
+    this.lockStudio();
+  }
+
+  lockStudio() {
+    this.#accessToken = null;
+    this.#csrfToken = null;
+
+    const gate = document.getElementById("security-gate");
+    const studioApp = document.getElementById("studio-app");
+    const canvas = document.getElementById("canvas-container");
+    const navList = document.getElementById("sections-nav-list");
+
+    if (canvas) canvas.innerHTML = "";
+    if (navList) navList.innerHTML = "";
+    if (studioApp) studioApp.setAttribute("hidden", "true");
+    if (gate) {
+      gate.removeAttribute("hidden");
+      const pwInput = document.getElementById("gate-password-input");
+      if (pwInput) {
+        pwInput.value = "";
+        pwInput.disabled = false;
+        pwInput.focus();
+      }
+      const submitBtn = document.getElementById("btn-unlock-studio");
+      if (submitBtn) submitBtn.disabled = false;
+    }
+  }
+
   resetIdleTimer() {
-    if (!this.#isAuthenticated) return;
     if (this.#idleTimer) clearTimeout(this.#idleTimer);
     this.#idleTimer = setTimeout(() => {
-      this.lockStudio("Session automatically locked after 15 minutes of inactivity.");
-    }, IDLE_TIMEOUT_MS);
+      this.logout();
+      alert("Session expired due to 15 minutes of inactivity. Please re-authenticate.");
+    }, 15 * 60 * 1000);
   }
 
-  /**
-   * Immediately lock Studio, wipe DOM & volatile key, and display Security Gate
-   */
-  lockStudio(reason = "") {
-    this.#isAuthenticated = false;
-    this.#aesKey = null;
-    if (this.#idleTimer) clearTimeout(this.#idleTimer);
-
-    // Close all modals
-    ["modal-add-section", "modal-github-settings", "modal-security-settings"].forEach(id => {
-      const m = document.getElementById(id);
-      if (m) m.setAttribute("hidden", "true");
-    });
-
-    // Wipe mounted DOM containers
-    const navList = document.getElementById("sections-nav-list");
-    const canvas = document.getElementById("canvas-container");
-    if (navList) navList.innerHTML = "";
-    if (canvas) canvas.innerHTML = "";
-
-    // Hide Studio workspace and show Security Gate
-    const studioApp = document.getElementById("studio-app");
-    const gate = document.getElementById("security-gate");
-    if (studioApp) studioApp.setAttribute("hidden", "true");
-    if (gate) gate.removeAttribute("hidden");
-
-    const pwInput = document.getElementById("gate-password-input");
-    if (pwInput) {
-      pwInput.value = "";
-      pwInput.focus();
-    }
-
-    if (reason) {
-      this.showGateError(reason);
-    } else {
-      this.hideGateError();
-    }
-
-    if (window.lucide && typeof window.lucide.createIcons === "function") {
-      window.lucide.createIcons();
-    }
-  }
-
-  /**
-   * Show error alert inside Security Gate
-   */
   showGateError(msg) {
     const errBox = document.getElementById("gate-error-box");
     const errText = document.getElementById("gate-error-text");
-    const gateCard = document.getElementById("gate-card");
-
-    if (errText) errText.innerText = msg;
-    if (errBox) errBox.removeAttribute("hidden");
-
-    if (gateCard) {
-      gateCard.classList.remove("shake-error");
-      void gateCard.offsetWidth; // Reflow to restart animation
-      gateCard.classList.add("shake-error");
+    if (errBox && errText) {
+      errText.innerText = msg;
+      errBox.removeAttribute("hidden");
+      const card = document.getElementById("gate-card");
+      if (card) {
+        card.classList.remove("gate-shake");
+        void card.offsetWidth;
+        card.classList.add("gate-shake");
+      }
     }
   }
 
-  /**
-   * Hide error alert inside Security Gate
-   */
   hideGateError() {
     const errBox = document.getElementById("gate-error-box");
     if (errBox) errBox.setAttribute("hidden", "true");
   }
 
-  /**
-   * Check and enforce brute-force lockout countdown
-   */
-  checkAndEnforceLockout() {
-    const state = this.getLockoutState();
-    const now = Date.now();
-    const pwInput = document.getElementById("gate-password-input");
-    const submitBtn = document.getElementById("btn-unlock-studio");
-    const badge = document.getElementById("gate-attempts-badge");
-
-    if (state.lockoutUntil > now) {
-      if (pwInput) pwInput.disabled = true;
-      if (submitBtn) submitBtn.disabled = true;
-
-      const updateCountdown = () => {
-        const latestState = this.getLockoutState();
-        const remainingSec = Math.ceil((latestState.lockoutUntil - Date.now()) / 1000);
-        if (remainingSec <= 0) {
-          if (this.#lockoutInterval) {
-            clearInterval(this.#lockoutInterval);
-            this.#lockoutInterval = null;
-          }
-          latestState.failedAttempts = 0;
-          latestState.lockoutUntil = 0;
-          this.setLockoutState(latestState);
-          if (pwInput) {
-            pwInput.disabled = false;
-            if (!this.#isAuthenticated) pwInput.focus();
-          }
-          if (submitBtn) submitBtn.disabled = false;
-          if (badge) badge.innerText = "Zero-Trust Gate";
-          this.hideGateError();
-        } else {
-          if (pwInput) pwInput.disabled = true;
-          if (submitBtn) submitBtn.disabled = true;
-          if (badge) badge.innerText = `Locked (${remainingSec}s)`;
-          this.showGateError(`Too many failed attempts. Gate locked for ${remainingSec} seconds.`);
-        }
-      };
-
-      updateCountdown();
-      if (this.#lockoutInterval) clearInterval(this.#lockoutInterval);
-      this.#lockoutInterval = setInterval(updateCountdown, 1000);
-      return true;
-    }
-
-    if (this.#lockoutInterval) {
-      clearInterval(this.#lockoutInterval);
-      this.#lockoutInterval = null;
-    }
-    if (pwInput) pwInput.disabled = false;
-    if (submitBtn) submitBtn.disabled = false;
-
-    if (badge) {
-      badge.innerText = state.failedAttempts > 0
-        ? `Attempts: ${state.failedAttempts}/${MAX_FAILED_ATTEMPTS}`
-        : "Zero-Trust Gate";
-    }
-    return false;
-  }
-
-  /**
-   * Initialize Security Gate listeners and boot workflow
-   */
   async initGate() {
     if (window.lucide && typeof window.lucide.createIcons === "function") {
       window.lucide.createIcons();
     }
 
-    await this.loadSecurityMetadata();
-    this.initAntiTamperGuard();
-    this.checkAndEnforceLockout();
-
-    // Password visibility toggle
     const toggleBtn = document.getElementById("btn-toggle-gate-pw");
     const pwInput = document.getElementById("gate-password-input");
     if (toggleBtn && pwInput) {
@@ -496,57 +278,22 @@ class SecurityVault {
       });
     }
 
-    // Form submit authentication
     const form = document.getElementById("security-gate-form");
     if (form) {
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        if (this.checkAndEnforceLockout()) return;
-
         const passphrase = pwInput ? pwInput.value : "";
         if (!passphrase) return;
 
         const submitBtn = document.getElementById("btn-unlock-studio");
         const submitText = document.getElementById("btn-unlock-text");
         if (submitBtn) submitBtn.disabled = true;
-        if (submitText) submitText.innerText = "Verifying PBKDF2 Key...";
+        if (submitText) submitText.innerText = "Authenticating with Gateway...";
 
         try {
-          const { verifierHash, aesKey } = await this.deriveCryptographicMaterial(
-            passphrase,
-            this.securityMeta.salt,
-            this.securityMeta.iterations
-          );
-
-          const isMatch = SecurityVault.constantTimeEqual(verifierHash, this.securityMeta.verifierHash);
-
-          if (!isMatch) {
-            const state = this.getLockoutState();
-            state.failedAttempts = (state.failedAttempts || 0) + 1;
-
-            if (state.failedAttempts >= MAX_FAILED_ATTEMPTS) {
-              state.lockCount = (state.lockCount || 0) + 1;
-              const lockDurationSec = BASE_LOCKOUT_SECONDS * Math.pow(2, state.lockCount - 1);
-              state.lockoutUntil = Date.now() + lockDurationSec * 1000;
-              this.setLockoutState(state);
-              this.checkAndEnforceLockout();
-            } else {
-              this.setLockoutState(state);
-              const remaining = MAX_FAILED_ATTEMPTS - state.failedAttempts;
-              const badge = document.getElementById("gate-attempts-badge");
-              if (badge) badge.innerText = `Attempts: ${state.failedAttempts}/${MAX_FAILED_ATTEMPTS}`;
-              this.showGateError(`Invalid master passphrase. ${remaining} attempt(s) remaining before lockout.`);
-            }
-            return;
-          }
-
-          // Authentication Succeeded!
-          this.setLockoutState({ failedAttempts: 0, lockoutUntil: 0, lockCount: 0 });
+          await this.login(passphrase);
           this.hideGateError();
-          this.#isAuthenticated = true;
-          this.#aesKey = aesKey;
 
-          // Hide Security Gate and Mount Studio Workspace
           const gate = document.getElementById("security-gate");
           const studioApp = document.getElementById("studio-app");
           if (gate) gate.setAttribute("hidden", "true");
@@ -557,24 +304,18 @@ class SecurityVault {
             this.#studioInstance = new StudioCMS(this);
             await this.#studioInstance.init();
           } else {
-            this.#studioInstance.ghConfig = await this.decryptGitHubVault();
-            this.#studioInstance.renderSidebarNav();
-            this.#studioInstance.renderActiveCanvas();
-            this.#studioInstance.refreshIcons();
+            await this.#studioInstance.refreshState();
           }
 
-          // Bind activity listeners for 15-min idle auto-lock
           ["mousemove", "keydown", "click", "scroll"].forEach(evt => {
             window.addEventListener(evt, () => this.resetIdleTimer(), { passive: true });
           });
           this.resetIdleTimer();
         } catch (err) {
-          console.error("Cryptographic verification error:", err);
-          this.showGateError("Cryptographic engine error: " + err.message);
+          console.error("Gateway authentication error:", err);
+          this.showGateError(err.message);
         } finally {
-          if (!this.checkAndEnforceLockout()) {
-            if (submitBtn) submitBtn.disabled = false;
-          }
+          if (submitBtn) submitBtn.disabled = false;
           if (submitText) submitText.innerText = "Authenticate & Mount Studio";
         }
       });
@@ -583,19 +324,14 @@ class SecurityVault {
 }
 
 class StudioCMS {
-  constructor(securityVault) {
-    this.vault = securityVault;
+  constructor(gatewayClient) {
+    this.gateway = gatewayClient;
     this.data = null;
+    this.currentSha = null;
     this.activeTab = "profile"; // "profile" | "contact" | "section_{id}"
     this.hasUnsavedChanges = false;
     this.localFileHandle = null;
     this.listenersBound = false;
-    this.ghConfig = {
-      repo: "Ba-se-l/my-portfolio",
-      branch: "main",
-      token: "",
-      commitMsg: "Update portfolio-data.json via Portfolio Studio CMS"
-    };
   }
 
   /**
@@ -603,17 +339,17 @@ class StudioCMS {
    */
   async init() {
     await this.loadInitialData();
-    if (this.vault) {
-      this.ghConfig = await this.vault.decryptGitHubVault();
-      // Ensure data.meta.security stays synchronized with active vault metadata
-      if (this.data && this.data.meta) {
-        this.data.meta.security = { ...this.vault.securityMeta };
-      }
-    }
     if (!this.listenersBound) {
       this.initGlobalEventListeners();
       this.listenersBound = true;
     }
+    this.renderSidebarNav();
+    this.renderActiveCanvas();
+    this.refreshIcons();
+  }
+
+  async refreshState() {
+    await this.loadInitialData();
     this.renderSidebarNav();
     this.renderActiveCanvas();
     this.refreshIcons();
@@ -1697,95 +1433,59 @@ class StudioCMS {
       fileImportInput.addEventListener("change", (e) => this.handleFileImport(e));
     }
 
-    // 6. GitHub Settings Modal (AES-256-GCM Encrypted Vault)
-    const ghModal = document.getElementById("modal-github-settings");
-    const openGhBtn = document.getElementById("btn-github-settings");
-    const closeGhBtn = document.getElementById("btn-close-gh-modal");
-    const cancelGhBtn = document.getElementById("btn-cancel-gh-settings");
-    const saveGhBtn = document.getElementById("btn-save-gh-settings");
+    // 6. Gateway Settings Modal
+    const gwModal = document.getElementById("modal-gateway-settings");
+    const openGwBtn = document.getElementById("btn-gateway-settings");
+    const closeGwBtn = document.getElementById("btn-close-gateway-modal");
+    const cancelGwBtn = document.getElementById("btn-cancel-gateway-settings");
+    const saveGwBtn = document.getElementById("btn-save-gateway-settings");
+    const testGwBtn = document.getElementById("btn-test-gateway-conn");
+    const gwInput = document.getElementById("gateway-url");
 
-    if (openGhBtn) {
-      openGhBtn.addEventListener("click", () => {
-        const repoEl = document.getElementById("gh-repo");
-        const branchEl = document.getElementById("gh-branch");
-        const tokenEl = document.getElementById("gh-token");
-        const msgEl = document.getElementById("gh-commit-msg");
+    if (gwInput && this.gateway) {
+      gwInput.value = this.gateway.gatewayUrl;
+    }
 
-        if (repoEl) repoEl.value = this.ghConfig.repo || "Ba-se-l/my-portfolio";
-        if (branchEl) branchEl.value = this.ghConfig.branch || "main";
-        if (tokenEl) tokenEl.value = this.ghConfig.token || "";
-        if (msgEl) msgEl.value = this.ghConfig.commitMsg || "Update portfolio-data.json via Portfolio Studio CMS";
+    const closeGwModal = () => {
+      if (gwModal) gwModal.setAttribute("hidden", "true");
+    };
 
-        if (ghModal) ghModal.removeAttribute("hidden");
+    if (openGwBtn) {
+      openGwBtn.addEventListener("click", () => {
+        if (gwModal) gwModal.removeAttribute("hidden");
+        if (gwInput && this.gateway) gwInput.value = this.gateway.gatewayUrl;
       });
     }
 
-    const closeGhModal = () => {
-      if (ghModal) ghModal.setAttribute("hidden", "true");
-    };
+    if (closeGwBtn) closeGwBtn.addEventListener("click", closeGwModal);
+    if (cancelGwBtn) cancelGwBtn.addEventListener("click", closeGwModal);
 
-    if (closeGhBtn) closeGhBtn.addEventListener("click", closeGhModal);
-    if (cancelGhBtn) cancelGhBtn.addEventListener("click", closeGhModal);
-
-    if (saveGhBtn) {
-      saveGhBtn.addEventListener("click", async () => {
-        this.ghConfig.repo = document.getElementById("gh-repo")?.value.trim() || "Ba-se-l/my-portfolio";
-        this.ghConfig.branch = document.getElementById("gh-branch")?.value.trim() || "main";
-        this.ghConfig.token = document.getElementById("gh-token")?.value.trim() || "";
-        this.ghConfig.commitMsg = document.getElementById("gh-commit-msg")?.value.trim() || "Update portfolio data";
-
-        try {
-          if (this.vault) {
-            await this.vault.encryptGitHubVault(this.ghConfig);
-          }
-          closeGhModal();
-          this.showToast("GitHub Token encrypted with AES-256-GCM and stored in vault.");
-        } catch (err) {
-          this.showToast("Encryption error: " + err.message, true);
+    if (saveGwBtn) {
+      saveGwBtn.addEventListener("click", () => {
+        if (gwInput && this.gateway) {
+          this.gateway.setGatewayUrl(gwInput.value);
+          this.showToast("Gateway URL updated: " + this.gateway.gatewayUrl);
+          closeGwModal();
         }
       });
     }
 
-    // 7. Security & Master Passphrase Modal
-    const secModal = document.getElementById("modal-security-settings");
-    const openSecBtn = document.getElementById("btn-security-settings");
-    const closeSecBtn = document.getElementById("btn-close-sec-modal");
-    const cancelSecBtn = document.getElementById("btn-cancel-sec-settings");
-    const saveSecBtn = document.getElementById("btn-save-sec-settings");
+    if (testGwBtn) {
+      testGwBtn.addEventListener("click", async () => {
+        testGwBtn.disabled = true;
+        testGwBtn.innerHTML = "<span>Testing...</span>";
+        if (gwInput && this.gateway) {
+          this.gateway.setGatewayUrl(gwInput.value);
+        }
+        const res = await this.gateway.testConnection();
+        testGwBtn.disabled = false;
+        testGwBtn.innerHTML = '<i data-lucide="activity"></i><span>Test Health Connection</span>';
+        if (window.lucide) window.lucide.createIcons();
 
-    const closeSecModal = () => {
-      if (secModal) secModal.setAttribute("hidden", "true");
-      ["sec-current-pw", "sec-new-pw", "sec-confirm-pw"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = "";
-      });
-    };
-
-    if (openSecBtn) {
-      openSecBtn.addEventListener("click", () => {
-        if (secModal) secModal.removeAttribute("hidden");
-        document.getElementById("sec-current-pw")?.focus();
-      });
-    }
-
-    if (closeSecBtn) closeSecBtn.addEventListener("click", closeSecModal);
-    if (cancelSecBtn) cancelSecBtn.addEventListener("click", closeSecModal);
-
-    if (saveSecBtn) {
-      saveSecBtn.addEventListener("click", async () => {
-        const currentPw = document.getElementById("sec-current-pw")?.value || "";
-        const newPw = document.getElementById("sec-new-pw")?.value || "";
-        const confirmPw = document.getElementById("sec-confirm-pw")?.value || "";
-
-        try {
-          if (this.vault) {
-            await this.vault.changeMasterPassphrase(currentPw, newPw, confirmPw, this.data);
-            this.markUnsaved(true);
-            closeSecModal();
-            this.showToast("Master Passphrase updated & AES-256-GCM vault re-keyed!");
-          }
-        } catch (err) {
-          this.showToast(err.message, true);
+        if (res.ok) {
+          alert(`Gateway connection successful! Service: ${res.data.service} v${res.data.version}`);
+        } else {
+          alert(`Gateway connection failed: ${res.error}`);
         }
       });
     }
@@ -1794,8 +1494,8 @@ class StudioCMS {
     const lockBtn = document.getElementById("btn-lock-studio");
     if (lockBtn) {
       lockBtn.addEventListener("click", () => {
-        if (this.vault) {
-          this.vault.lockStudio();
+        if (this.gateway) {
+          this.gateway.logout();
         }
       });
     }
@@ -1891,78 +1591,30 @@ class StudioCMS {
    * Publish directly to GitHub repository via REST API
    */
   async publishToGitHub() {
-    if (!this.ghConfig.token) {
-      alert("GitHub Personal Access Token is required to publish directly to GitHub. Please configure it in 'GitHub Sync'.");
-      document.getElementById("btn-github-settings")?.click();
-      return;
-    }
+    const commitMsg = prompt(
+      "Enter commit message for publishing:",
+      "chore(cms): update portfolio content via Admin Studio"
+    );
+    if (!commitMsg) return;
 
-    const { repo, branch, token, commitMsg } = this.ghConfig;
-    const filePath = "data/portfolio-data.json";
-    const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}?ref=${branch}`;
-
-    this.showToast("Connecting to GitHub API...", false);
-
+    this.showToast("Publishing through FastAPI Security Gateway...", false);
     try {
-      // 1. Fetch current file SHA from GitHub
-      let sha = "";
-      const getRes = await fetch(apiUrl, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Accept": "application/vnd.github.v3+json"
-        }
-      });
-
-      if (getRes.ok) {
-        const fileInfo = await getRes.json();
-        sha = fileInfo.sha;
-      } else if (getRes.status === 404) {
-        console.log("File does not exist yet on remote, creating new file.");
-      } else {
-        const errJson = await getRes.json();
-        throw new Error(errJson.message || `Failed to fetch file SHA (${getRes.status})`);
-      }
-
-      // 2. Prepare UTF-8 Base64 payload
       this.data.meta.lastUpdated = new Date().toISOString().split("T")[0];
-      const jsonString = JSON.stringify(this.data, null, 2);
-      const utf8Base64 = btoa(unescape(encodeURIComponent(jsonString)));
-
-      // 3. Send PUT request to GitHub Contents API
-      const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Accept": "application/vnd.github.v3+json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          message: commitMsg || "Update portfolio-data.json via Portfolio Studio CMS",
-          content: utf8Base64,
-          sha: sha || undefined,
-          branch: branch || "dev"
-        })
-      });
-
-      if (!putRes.ok) {
-        const errJson = await putRes.json();
-        throw new Error(errJson.message || `HTTP ${putRes.status}`);
-      }
-
-      const result = await putRes.json();
+      const result = await this.gateway.publishChanges(this.data, commitMsg);
+      this.currentSha = result.new_blob_sha;
       this.markUnsaved(false);
-      this.showToast(`Published commit successfully to ${repo} (${branch})!`);
-      console.log("GitHub commit details:", result.commit);
+      this.showToast(`Published successfully to GitHub! (Blob SHA: ${result.new_blob_sha.slice(0, 7)})`);
     } catch (err) {
       console.error("GitHub publish failed:", err);
-      this.showToast(`GitHub Publish Error: ${err.message}`, true);
+      this.showToast(`Publish Error: ${err.message}`, true);
     }
   }
 }
 
-// Boot Zero-Trust Cryptographic Security Gate on DOM ready
+// Boot Zero-Trust FastAPI Security Gate on DOM ready
 document.addEventListener("DOMContentLoaded", () => {
-  const securityVault = new SecurityVault();
-  securityVault.initGate();
+  const gatewayClient = new BackendGatewayClient();
+  window.gatewayClient = gatewayClient;
+  gatewayClient.initGate();
 });
 
